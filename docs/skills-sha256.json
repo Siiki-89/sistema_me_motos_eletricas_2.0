@@ -1,0 +1,30 @@
+[
+  {
+    "path": ".agents\\skills\\agent-browser\\SKILL.md",
+    "sha256": "632E08033461F9DB6D3C734DB2FE28BB51DAA6802D31DE7E22D290AB290E6A21"
+  },
+  {
+    "path": ".agents\\skills\\frontend-design\\LICENSE.txt",
+    "sha256": "0D542E0C8804E39AA7F37EB00DA5A762149DC682D7829451287E11B938E94594"
+  },
+  {
+    "path": ".agents\\skills\\frontend-design\\SKILL.md",
+    "sha256": "D91970639E9F5C37682AC7AB60094D35F1C7C1F38D731BD56396563AEE10C1D3"
+  },
+  {
+    "path": ".agents\\skills\\me-design-system\\SKILL.md",
+    "sha256": "BFB1B6523EFF18D7EC2A23BBC0616CBBFE48DBB54C9E9BCCB553C44CD12ADEC4"
+  },
+  {
+    "path": ".agents\\skills\\me-estoque\\SKILL.md",
+    "sha256": "AD27F74B211003EEBB85F6629192314056A2B8DB480F9F344C7A608DF1CCAC2F"
+  },
+  {
+    "path": ".agents\\skills\\me-quality-assurance\\SKILL.md",
+    "sha256": "C104FA3E3B7D039465B59F6C8314C5F7F214278DC9BC5EC24591BF4B75DC7ED6"
+  },
+  {
+    "path": ".agents\\skills\\web-design-guidelines\\SKILL.md",
+    "sha256": "F4647CA866A3ACCF763777F83E7682954F0187CD6BEA7EEA0399796652414E8F"
+  }
+]

@@ -1,0 +1,18 @@
+# ME Estoque 2.0
+
+- Produto novo, local e offline, Windows/PowerShell. Raiz: esta pasta.
+- Não procurar, reutilizar ou migrar o sistema anterior. Regras ainda serão definidas.
+- Etapa atual: preparação e planejamento. Não implementar funcionalidades de estoque.
+- Ler `docs/estado-atual.md` primeiro; consultar apenas os documentos do módulo necessário.
+- Usar Superpowers sob demanda: brainstorming → plano → implementação autorizada → testes e revisão.
+- Skills ME em `.agents/skills/`; o catálogo de procedência está em `docs/skills.md`.
+- SQLite é o banco local preferido; stack e modelo de dados ainda não aprovados.
+- Não enviar dados operacionais, arquivos, capturas ou bancos para serviços externos; pesquisa pública só com termos genéricos.
+- Antes de alterar arquivo existente, fazer backup local fora do Git. Nunca sobrescrever backups.
+- Não executar scripts externos sem inspeção; não instalar dependências duplicadas.
+- Sem publicação, nuvem, custos, migração ou comandos destrutivos nesta etapa.
+- Pesquisar com `rg` de forma dirigida; respeitar `.gitignore`/`.rgignore` e evitar ler dependências ou documentos grandes repetidamente.
+- Delegar somente tarefas independentes com arquivos distintos. Não paralelizar alterações no mesmo banco/repositório.
+- Testes futuros: dados sintéticos, banco isolado e Agent Browser em sessão própria, sem perfil pessoal.
+- Registrar comandos, resultados reais, limitações e próximo passo. Não declarar testes que não rodaram.
+- Commits locais; nenhum remoto sem instrução explícita. Dados, backups e logs nunca entram no Git.

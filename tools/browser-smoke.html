@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verificação local das ferramentas</title>
+<main><h1>Fixture de teste — não é o produto</h1><form id="form"><label for="nome">Nome fictício</label><input id="nome" required><button>Verificar</button></form><output id="resultado" aria-live="polite"></output></main>
+<script>document.querySelector('#form').addEventListener('submit',e=>{e.preventDefault();document.querySelector('#resultado').textContent='Verificado: '+document.querySelector('#nome').value})</script></html>

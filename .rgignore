@@ -1,0 +1,10 @@
+node_modules/
+tools/python-libs/
+data/
+backups/
+artifacts/
+logs/
+dist/
+build/
+coverage/
+package-lock.json
