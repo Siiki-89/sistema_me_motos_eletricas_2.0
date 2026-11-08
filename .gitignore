@@ -18,3 +18,8 @@ coverage/
 *.log
 __pycache__/
 .agent-browser/
+
+.superpowers/
+release/
+tools/runtime/
+*.tsbuildinfo

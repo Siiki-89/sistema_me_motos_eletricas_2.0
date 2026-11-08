@@ -4,6 +4,7 @@
 - Não procurar, reutilizar ou migrar o sistema anterior. Regras ainda serão definidas.
 - Etapa atual: preparação e planejamento. Não implementar funcionalidades de estoque.
 - Ler `docs/estado-atual.md` primeiro; consultar apenas os documentos do módulo necessário.
+- Brainstorming agora é propositivo: usar `docs/proposta-fluxo-operacional.md`, separar confirmado/proposto/pendente e agrupar somente dúvidas de negócio relevantes ao final. Não repetir perguntas resolvidas nem bloquear em escolhas técnicas reversíveis.
 - Usar Superpowers sob demanda: brainstorming → plano → implementação autorizada → testes e revisão.
 - Skills ME em `.agents/skills/`; o catálogo de procedência está em `docs/skills.md`.
 - SQLite é o banco local preferido; stack e modelo de dados ainda não aprovados.

@@ -1,29 +1,28 @@
-# Brainstorming inicial
+# Brainstorming — decisões e ponto de continuidade
+
+## Metodologia vigente
+
+Planejamento autônomo e propositivo conforme instrução do usuário. Reutilizar documentação, separar confirmado/proposto/pendente e perguntar só sobre mudanças relevantes de negócio. Não retomar questionário individual nem reabrir identificação, reserva, baixa ou políticas já aprovadas.
 
 ## Confirmado
 
-Produto novo de estoque e produção, para um único computador Windows, SQLite exclusivamente local e funções essenciais offline. Prioridades: usabilidade, design profissional, desempenho, modularidade e contexto eficiente. Sem reaproveitamento ou migração de legado.
+Produto novo para um computador Windows, SQLite exclusivamente local e operação essencial offline. Uma moto por caixa e por OP; ME/cor compartilháveis; chassi após abrir; reserva na OP inicial e baixa ao iniciar transcrição, admitindo conferência incompleta. Cada unidade tem identidade interna estável.
 
-## Questões para a próxima etapa
+Última aprovação: saída normal exige chassi/montagem/qualidade; movimento administrativo auditado não libera entrega insegura. Extras preservam origem e podem ir a comum/outra unidade/destino administrativo justificado. Cancelamento pré-conversão libera reserva; depois não devolve caixa. Novas OPs podem usar a mesma unidade sem duplicar ou baixar outra caixa.
 
-| Tema | Decisão aberta | Impacto |
-|---|---|---|
-| Operação | Quem usa e qual a primeira tarefa diária? | Fluxo inicial e terminologia |
-| Caixas/unidades | Caixa é embalagem, lote ou entidade rastreável? | Identidade e conversões |
-| Peças/baterias | Controle agregado, por lote ou número de série? | Cadastro e rastreabilidade |
-| Produção/montagem | Existem ordens, etapas, consumo e retrabalho? | Estados e transações |
-| Qualidade/expedição | Há bloqueio, aprovação, reserva e liberação? | Validações e permissões locais |
-| Movimentações | Quais eventos, ajustes e reversões são permitidos? | Histórico e correções |
-| Volume | Quantos itens/movimentos e anos de histórico? | Índices, paginação e medições |
-| Backup | Destino local, frequência e perda aceitável? | Recuperação |
-| UX | Monitor, leitor, impressão e atalhos? | Layout e acessibilidade |
+Registro com critérios: [regras do módulo](modulos/estoque-producao.md). Evidências da OP, planilha e ZIP: [requisitos operacionais](requisitos-operacionais.md). Materiais foram analisados como referência; não são estoque atual nem código reutilizável.
 
-Não assumir que todos esses módulos serão necessários. Saldo negativo, composição, custos, unidades de medida, identificação dos operadores e serialização não têm regras definidas.
+## Proposta entregue para aprovação
 
-## Alternativas preliminares
+- [Fluxo integrado](proposta-fluxo-operacional.md): estados, telas, transições e políticas atualizadas.
+- [Validação de consistência](validacao-consistencia.md): invariantes, conflitos e cenários numéricos.
+- [Arquitetura](arquitetura-tecnica.md): React/TypeScript + Fastify/Node + SQLite, distribuição/backup local e alternativas.
+- [Plano incremental](superpowers/plans/2026-11-08-me-estoque-implementacao.md): 12 entregas verificáveis, arquivos, contratos e testes futuros.
 
-Web local com serviço em loopback e SQLite aproveita o navegador existente, mas exige coordenação de processos. Aplicação desktop com frontend web oferece janela e inicialização integradas, mas adiciona empacotamento e manutenção do runtime.
+Recomendações técnicas ainda propostas: uma OP ativa por unidade; nova execução exige reinspeção; quantidade bloqueada ao cancelar antes do lançamento quando abertura física for informada; comandos idempotentes e correções compensatórias.
 
-Recomendação provisória: avaliar primeiro web local, sem escolher framework. Essa recomendação não foi aprovada como stack definitiva.
+## Pendências reais
 
-Abrir a próxima conversa com: “Qual operação você quer que o ME Estoque execute primeiro, do começo ao fim?” Registrar exemplos válidos e inválidos, discutir alternativas e aprovar o desenho antes do plano de implementação. Nesta etapa, brainstorming significa levantamento inicial; não foi concluída a definição do produto.
+Lista oficial de extras e aplicabilidade final dos checklists por modelo. Antes da operação real, configurar destino secundário local de backup e validar recuperação. Compras, orçamentos, catálogo completo de fornecedores e série individual de baterias não integram automaticamente a primeira versão.
+
+Próximo passo: usuário revisar arquitetura/plano; só depois implementar. Execução sequencial recomendada para evitar custo de contexto duplicado e mudanças concorrentes nos contratos. Nenhuma funcionalidade ou banco foi criado nesta etapa.

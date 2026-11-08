@@ -7,9 +7,12 @@ Comece por [estado atual](docs/estado-atual.md).
 
 - [Ambiente e ferramentas](docs/ambiente.md)
 - [Skills e procedência](docs/skills.md)
-- [Arquitetura preliminar](docs/arquitetura.md)
+- [Arquitetura recomendada para aprovação](docs/arquitetura-tecnica.md)
+- [Fluxo operacional](docs/proposta-fluxo-operacional.md)
+- [Requisitos e evidências](docs/requisitos-operacionais.md)
+- [Validação de consistência](docs/validacao-consistencia.md)
 - [Brainstorming](docs/brainstorming.md)
-- [Plano das próximas etapas](docs/plano-preliminar.md)
+- [Plano incremental de implementação](docs/superpowers/plans/2026-11-08-me-estoque-implementacao.md)
 - [Riscos](docs/riscos.md)
 - [Verificações](docs/verificacoes.md)
 
