@@ -1,5 +1,7 @@
 # Requisitos operacionais — brainstorming em andamento
 
+**Atualização de 09/11/2026:** arquitetura e plano foram aprovados. A primeira entrega da fundação foi implementada e validada; os demais módulos continuam planejados. Consulte [estado atual](estado-atual.md) e [verificação da fundação](verificacao-fundacao.md). As referências a aprovação futura abaixo pertencem ao registro anterior do planejamento.
+
 Atualizado em 08/11/2026. Este documento reúne evidências, regras confirmadas e propostas. As políticas abaixo foram aprovadas; arquitetura e plano técnico ainda aguardam aprovação. Nenhuma autorização de implementação.
 
 ## Aprovações vigentes

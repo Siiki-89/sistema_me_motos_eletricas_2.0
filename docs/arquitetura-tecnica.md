@@ -1,6 +1,6 @@
 # ME Estoque 2.0 — arquitetura técnica para aprovação
 
-08/11/2026. **Recomendação, não implementação autorizada.** Políticas de negócio aprovadas em [fluxo operacional](proposta-fluxo-operacional.md); conflitos e invariantes em [validação](validacao-consistencia.md). Plano executável futuro em [Writing Plans](superpowers/plans/2026-11-08-me-estoque-implementacao.md).
+Proposta de 08/11/2026, aprovada pelo usuário na Etapa 3. **Somente a primeira entrega e suas dependências mínimas foram autorizadas e implementadas**, conforme [verificação](verificacao-fundacao.md). O restante deste documento descreve a arquitetura de destino, não funcionalidades já disponíveis. Políticas em [fluxo operacional](proposta-fluxo-operacional.md); invariantes em [validação](validacao-consistencia.md); progresso em [Writing Plans](superpowers/plans/2026-11-08-me-estoque-implementacao.md).
 
 ## 1. Recomendação e alternativas
 

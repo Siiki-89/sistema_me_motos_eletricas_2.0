@@ -1,5 +1,7 @@
 # ME Estoque 2.0 — proposta integrada de fluxo operacional
 
+**Atualização de 09/11/2026:** arquitetura e plano foram aprovados. A primeira entrega da fundação foi implementada e validada; os demais módulos continuam planejados. Consulte [estado atual](estado-atual.md) e [verificação da fundação](verificacao-fundacao.md). As referências a aprovação futura abaixo pertencem ao registro anterior do planejamento.
+
 08/11/2026 · Etapa 2 · **Políticas de negócio aprovadas com os ajustes abaixo; detalhamento técnico, arquitetura e plano aguardam aprovação. Sem autorização de implementação.**
 
 ## Ajustes aprovados e precedência

@@ -2,12 +2,12 @@
 
 - Produto novo, local e offline, Windows/PowerShell. Raiz: esta pasta.
 - Não procurar, reutilizar ou migrar o sistema anterior. Regras ainda serão definidas.
-- Etapa atual: preparação e planejamento. Não implementar funcionalidades de estoque.
+- Etapa atual: fundação técnica implementada (tarefa 1). Arquitetura/plano aprovados; não avançar para módulos operacionais sem novo pedido.
 - Ler `docs/estado-atual.md` primeiro; consultar apenas os documentos do módulo necessário.
 - Brainstorming agora é propositivo: usar `docs/proposta-fluxo-operacional.md`, separar confirmado/proposto/pendente e agrupar somente dúvidas de negócio relevantes ao final. Não repetir perguntas resolvidas nem bloquear em escolhas técnicas reversíveis.
 - Usar Superpowers sob demanda: brainstorming → plano → implementação autorizada → testes e revisão.
 - Skills ME em `.agents/skills/`; o catálogo de procedência está em `docs/skills.md`.
-- SQLite é o banco local preferido; stack e modelo de dados ainda não aprovados.
+- Stack aprovada: React/TypeScript/Vite + Node/Fastify + SQLite local. Consultar docs/operacao-local.md e docs/verificacao-fundacao.md para executar/testar.
 - Não enviar dados operacionais, arquivos, capturas ou bancos para serviços externos; pesquisa pública só com termos genéricos.
 - Antes de alterar arquivo existente, fazer backup local fora do Git. Nunca sobrescrever backups.
 - Não executar scripts externos sem inspeção; não instalar dependências duplicadas.

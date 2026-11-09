@@ -1,30 +1,28 @@
-# Estado atual — 08/11/2026
+# Estado atual — 09/11/2026
 
 ## Ponto de retomada
 
-O usuário aprovou as três políticas operacionais com ajustes, incorporados em [proposta-fluxo-operacional.md](proposta-fluxo-operacional.md) e [requisitos-operacionais.md](requisitos-operacionais.md). Saída administrativa não aprova qualidade; extras preservam origem nas transferências; novas OPs reutilizam unidade sem reserva/baixa. Não repetir perguntas resolvidas. Sem implementação ou alteração de banco.
+Arquitetura e plano aprovados. **Primeira entrega implementada, executável e validada.** Não avançar automaticamente para as tarefas seguintes. O usuário enviará o próximo prompt.
 
-**Próximo passo:** aprovação da [arquitetura técnica](arquitetura-tecnica.md) e do [plano incremental](superpowers/plans/2026-11-08-me-estoque-implementacao.md), com 12 entregas verificáveis. Recomendação: React/TypeScript + Fastify/Node + SQLite, web local em loopback. [Validação de consistência](validacao-consistencia.md) documenta conflitos e invariantes; [registro do módulo](modulos/estoque-producao.md) concentra regras aprovadas. Uma OP ativa por unidade, reinspeção após nova execução e bloqueio de quantidade aberta ao cancelar são propostas técnicas ainda submetidas à revisão.
+- React/TypeScript/Vite e Fastify/Node24 em loopback, SQLite local3.53.4.
+- Interface inicial e Proteção dos dados; sem motos, caixas, OPs ou módulos operacionais.
+- Schema técnico versão1, migration com checksum, FK/transações, backup manual consistente, validação e restauração com cópia de segurança.
+- Windows: scripts/start.ps1 e scripts/stop.ps1; runtime local do projeto, independente do Codex.
+- Suite24/24 passou; build/typecheck passaram; Agent Browser shell e backup passaram. Desktop1440 e móvel390 inspecionados.
+- Revisão independente aprovou especificação e qualidade após corrigir concorrência e cleanup da restauração.
 
-Produto novo, criado do zero em `C:\Users\Alexandre de Melo\Desktop\me`. Por orientação posterior do usuário, análise, busca e migração de legado estão fora do escopo. Regras de negócio serão definidas em brainstorming.
+## Como continuar
 
-Nenhuma funcionalidade, schema de domínio ou frontend foi implementado. SQLite local está definido; stack/empacotamento foram recomendados, ainda não aprovados. Revisão desta entrega é documental; testes de software e benchmarks estão previstos, não executados.
+Ler [operação local](operacao-local.md), [verificação da entrega](verificacao-fundacao.md) e [plano incremental](superpowers/plans/2026-11-08-me-estoque-implementacao.md). Tarefa1 marcada; apenas dependências mínimas da tarefa2 implementadas, seus passos compostos permanecem pendentes. Tarefas3–12 não iniciadas.
 
-| Local | Finalidade |
-|---|---|
-| `.git/` | Histórico local, sem publicação |
-| `AGENTS.md` | Instruções curtas e roteamento de contexto |
-| `.agents/skills/` | Skills ME e frontend/QA selecionadas |
-| `docs/` | Ambiente, decisões, plano e evidências |
-| `tools/` | Dependências e utilitários de desenvolvimento |
-| `data/` | Reservado para persistência futura, ignorado pelo Git |
-| `backups/` | Cópias anteriores a alterações, ignoradas pelo Git |
-| `artifacts/` | Evidências locais de verificação, ignoradas pelo Git |
+Banco padrão criado ao iniciar normalmente: `%LOCALAPPDATA%\ME-Estoque\data\me-estoque.sqlite`; backups em `data\backups` desse diretório. Desenvolvimento em `data/development`; testes em `artifacts/`. Nenhum dado anterior ou real importado; testes nunca usaram base de produção.
 
-A subpasta provisória `me-estoque-2.0`, criada antes do esclarecimento do usuário, teve o conteúdo movido para a raiz após conferir caminhos e ausência de colisões; só a pasta vazia foi removida. Nenhum conteúdo perdido.
+Limites: backup agendado/retencão, auditoria de negócio, recuperação automática excepcional e instalador final não estão prontos. Journal de restauração pendente bloqueia startup seguro e requer revisão manual. Não apagar arquivos para destravar. Regras/quantidades de extras e aplicabilidade de checklist continuam pendentes para módulos futuros.
 
-Etapa 2 em andamento: recebimento confirmado parcialmente em [recebimento.md](recebimento.md). A referência de OP fornecida pelo usuário foi analisada integralmente em [requisitos-operacionais.md](requisitos-operacionais.md); lista de itens extras pendente. O uso autorizado desse formulário como referência operacional não inclui reaproveitamento de código ou migração de dados.
+## Referências de negócio
 
-Confirmado: cada OP corresponde exclusivamente a uma única moto, com uma ficha individual. A mesma unidade pode ter várias OPs históricas; apenas a inicial participa da reserva/conversão.
+[Fluxo operacional](proposta-fluxo-operacional.md), [registro de regras](modulos/estoque-producao.md), [requisitos e fontes](requisitos-operacionais.md), [arquitetura](arquitetura-tecnica.md) e [consistência](validacao-consistencia.md).
 
-Referências adicionais analisadas: planilha de produção e programa de orçamento em ZIP, exclusivamente como material de processo e UX, sem execução/reuso/importação. Resultados em `requisitos-operacionais.md`, seções 9–13. ME/cor selecionam caixas; chassi só após desembalagem; reserva na OP inicial e baixa ao iniciar transcrição, mesmo antes do fim da conferência. Dados mínimos/ação explícita estão propostos no fluxo; não retomar a pergunta individual. Pendentes: catálogo oficial de extras e aplicabilidade de checklist; não bloqueiam aprovação do desenho técnico.
+Uma moto por caixa/OP; ME/cor compartilháveis; chassi após abrir; reserva na OP inicial e conversão ao iniciar transcrição. Novas OPs reutilizam unidade sem outra baixa. Movimento administrativo não aprova qualidade; extras preservam origem. Não repetir decisões já confirmadas.
+
+Produto novo na raiz deste projeto. Referências PDF/planilha/ZIP foram só analisadas, sem execução de scripts/reutilização/importação. Git local na branch `codex/fundacao-local`, sem remoto/publicação. Documentos aprovados preservados no commit `1b77aea`; commit de implementação registrado no histórico Git. Dados, backups, runtime e evidências ignorados.

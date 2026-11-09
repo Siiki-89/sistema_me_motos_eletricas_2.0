@@ -1,5 +1,7 @@
 # Brainstorming — decisões e ponto de continuidade
 
+**Atualização de 09/11/2026:** arquitetura e plano foram aprovados. A primeira entrega da fundação foi implementada e validada; os demais módulos continuam planejados. Consulte [estado atual](estado-atual.md) e [verificação da fundação](verificacao-fundacao.md). As referências a aprovação futura abaixo pertencem ao registro anterior do planejamento.
+
 ## Metodologia vigente
 
 Planejamento autônomo e propositivo conforme instrução do usuário. Reutilizar documentação, separar confirmado/proposto/pendente e perguntar só sobre mudanças relevantes de negócio. Não retomar questionário individual nem reabrir identificação, reserva, baixa ou políticas já aprovadas.

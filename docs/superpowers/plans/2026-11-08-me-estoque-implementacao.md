@@ -10,9 +10,15 @@
 
 **Spec:** [Arquitetura técnica](../../arquitetura-tecnica.md), [fluxo operacional](../../proposta-fluxo-operacional.md), [regras aprovadas](../../modulos/estoque-producao.md) e [invariantes/casos de conflito](../../validacao-consistencia.md).
 
-**Status:** Plano proposto para aprovação. Nenhuma tarefa executada. Os caminhos de código, comandos npm e testes abaixo serão criados na implementação; não existem nem foram executados nesta entrega.
+**Status em 09/11/2026:** arquitetura/plano aprovados. Tarefa 1 implementada e validada (24 testes, build e navegador), com dependência mínima de SQLite/migrations/backup/restauração exigida pelo pedido. Tarefa 2 permanece parcial; tarefas 3–12 não iniciadas. Detalhes e evidências em [verificação da fundação](../../verificacao-fundacao.md).
 
 ## Global Constraints
+
+### Registro da primeira entrega
+
+Implementação real usa `tests/server/foundation.test.ts`, `tests/web/app.test.tsx` e `tests/tooling/`, em lugar dos nomes iniciais ilustrados na tarefa 1. Tokens ficam em `src/web/app/tokens.css`; schemas/DTOs mínimos em `src/shared/contracts/foundation.ts`. `buildApp` permanece síncrono. Tipos genéricos de comandos de domínio foram adiados até existirem consumidores. O runner aceita `shell` e `backup`, sem arquivos JSON de cenário redundantes. Backend e UI foram delegados separadamente conforme pedido posterior do usuário, com revisão independente.
+
+Recorte mínimo da tarefa 2 já executado: migration técnica versão1 com checksum/compatibilidade, persistência, FK/transação, backup manual validado, restauração com safety backup e bloqueio por journal interrompido. Não marcar seus passos compostos como completos: auditoria/idempotência de domínio, retenção/agendamento, testes de crash abrangentes e recuperação automática continuam pendentes. Não existe tabela operacional de estoque.
 
 - Windows/PowerShell; um computador; SQLite exclusivamente local; funções essenciais offline.
 - Produto novo. Não reutilizar código, migrar planilha, executar ZIP ou cadastrar catálogos de referência automaticamente.
@@ -52,11 +58,11 @@ Scripts planejados na tarefa 1: `npm run test -- <arquivo>` = Vitest run; `npm r
 
 **Interfaces:** `buildApp(options: {dataDir: string; port: number; mode: 'test'|'development'|'production'}): FastifyInstance`; `GET /api/v1/health` retorna identidade/versão/status sem caminhos privados. Tokens/sessão local e proteção Origin/Host funcionam também em testes. Layout inicial sem funcionalidades falsas.
 
-- [ ] Definir tokens e estados de feedback conforme me-design-system/frontend-design; fixar dependências e escrever testes de proteção e navegação antes dos handlers/componentes.
-- [ ] Executar `npm run test -- tests/http-security.test.ts tests/app.test.tsx`; esperar FAIL: app ainda não implementado.
-- [ ] Implementar buildApp, contratos, sessão e shell; servir build na mesma origem em produção, API só loopback. Scripts de testes falham se não houver testes/cenário.
-- [ ] Reexecutar testes; esperar PASS; rodar typecheck/build e `npm run test:browser -- shell`, verificando foco/teclado e ausência de requisições externas.
-- [ ] Registrar versões e evidências; commit `feat: add local application foundation` com os arquivos desta tarefa.
+- [x] Definir tokens e estados de feedback conforme me-design-system/frontend-design; fixar dependências e escrever testes de proteção e navegação antes dos handlers/componentes.
+- [x] Executar `npm run test -- tests/http-security.test.ts tests/app.test.tsx`; esperar FAIL: app ainda não implementado.
+- [x] Implementar buildApp, contratos, sessão e shell; servir build na mesma origem em produção, API só loopback. Scripts de testes falham se não houver testes/cenário.
+- [x] Reexecutar testes; esperar PASS; rodar typecheck/build e `npm run test:browser -- shell`, verificando foco/teclado e ausência de requisições externas.
+- [x] Registrar versões e evidências; commit `feat: add local application foundation` com os arquivos desta tarefa.
 
 Asserções obrigatórias do teste:
 ```ts
@@ -288,4 +294,4 @@ Autor-revisão documental: requisitos principais têm tarefa; assinaturas usam o
 
 Pendências de conteúdo: catálogo oficial de extras e aplicabilidade final dos checklists. O mecanismo genérico é implementável após aprovação; nenhuma lista real ou aprovação de qualidade por modelo será inventada. Regras de descarte/perdas/reembalagem física ficam fora do fluxo inicial; registros administrativos não equivalem a implementação dessas políticas.
 
-**Próximo passo:** aprovação conjunta de arquitetura, controles técnicos recomendados e plano. Não executar as tarefas enquanto essa aprovação não vier.
+**Próximo passo:** aguardar novo pedido para a próxima entrega. A aprovação da arquitetura já ocorreu; ela não autoriza executar automaticamente as 12 tarefas.
