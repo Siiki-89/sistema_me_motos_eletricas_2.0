@@ -1,0 +1,10 @@
+CREATE TABLE actor(id TEXT PRIMARY KEY, label TEXT NOT NULL) STRICT;
+INSERT INTO actor VALUES ('local-operator','Operador local (sem autenticação individual)');
+CREATE TABLE product(id TEXT PRIMARY KEY, meCode TEXT NOT NULL UNIQUE, commercialName TEXT, notes TEXT, active INTEGER NOT NULL CHECK(active IN(0,1)), version INTEGER NOT NULL) STRICT;
+CREATE TABLE variant(id TEXT PRIMARY KEY, productId TEXT NOT NULL REFERENCES product(id), color TEXT, colorKey TEXT NOT NULL, active INTEGER NOT NULL CHECK(active IN(0,1)), version INTEGER NOT NULL, UNIQUE(productId,colorKey)) STRICT;
+CREATE TABLE box_origin(id TEXT PRIMARY KEY, variantId TEXT NOT NULL REFERENCES variant(id), quantity INTEGER NOT NULL CHECK(quantity>0), receivedDate TEXT NOT NULL, supplier TEXT, invoice TEXT, lot TEXT, notes TEXT, meCode TEXT NOT NULL, color TEXT) STRICT;
+CREATE TABLE box_movement(id TEXT PRIMARY KEY, originId TEXT NOT NULL REFERENCES box_origin(id), quantity INTEGER NOT NULL CHECK(quantity<>0), kind TEXT NOT NULL CHECK(kind IN('receipt','adjustment','reversal')), effectiveDate TEXT NOT NULL, reason TEXT, reversesId TEXT UNIQUE REFERENCES box_movement(id), actorId TEXT NOT NULL REFERENCES actor(id), createdAt TEXT NOT NULL) STRICT;
+CREATE INDEX movement_origin ON box_movement(originId,createdAt,id);
+CREATE INDEX origin_variant ON box_origin(variantId,receivedDate,id);
+CREATE TABLE command_receipt(operationId TEXT PRIMARY KEY, hash TEXT NOT NULL, result TEXT NOT NULL, createdAt TEXT NOT NULL) STRICT;
+CREATE TABLE audit_event(id TEXT PRIMARY KEY, operationId TEXT NOT NULL UNIQUE REFERENCES command_receipt(operationId), actorId TEXT NOT NULL REFERENCES actor(id), action TEXT NOT NULL, result TEXT NOT NULL, createdAt TEXT NOT NULL) STRICT;

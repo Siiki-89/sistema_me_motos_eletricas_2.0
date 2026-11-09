@@ -32,3 +32,11 @@ A identidade se concentra no monograma ME e na estrutura de posto de trabalho. F
 Navegação limitada a Início e Proteção dos dados. Link para pular ao conteúdo, foco visível, HTML semântico e mensagens anunciadas. Sem animação contínua; reduced-motion respeitado. A 390px a navegação passa ao topo e os controles se empilham. Estados de carregamento, vazio, erro e sucesso devem preservar contexto.
 
 Restauração exige selecionar uma cópia, validar sua integridade e digitar RESTAURAR em diálogo com foco contido. A explicação informa a substituição dos dados locais e a cópia de segurança automática. Falhas mantêm a seleção e o texto; nenhuma opção de caminho ou upload arbitrário.
+
+## Extensão operacional — etapa4
+
+Navegação: Início, Modelos, Recebimento, Estoque de caixas e Proteção dos dados. Mantida identidade e tokens da fundação. Tabelas são a área principal; três saldos reais aparecem em faixa contínua. Recebimento usa duas seções: modelo/quantidade e origem. Confirmação mostra efeito antes de gravar. Modelos e histórico usam diálogos focados; correções exigem motivo.
+
+Consultas com50 linhas; filtros/página de modelos e estoque na URL. Seleção de modelo também tem pesquisa e paginação. Datas civis não sofrem conversão de dia pelo fuso. Feedback tem texto e status/alert; falha preserva campos e chave. Campos do Field recebem name/autocomplete; códigos sem corretor ortográfico.
+
+Desktop1440 e móvel390 inspecionados; tabela estreita permite rolagem local. Sem fontes/assets remotos. Componentes comuns em src/web/features/common/Operational.tsx, CSS operacional em src/web/app/Operations.module.css, cores/tipografia em tokens.css. Evidências de auditoria e limites no relatório da etapa4.

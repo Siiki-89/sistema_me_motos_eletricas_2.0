@@ -1,17 +1,17 @@
 # ME Estoque 2.0
 
 - Produto novo, local e offline, Windows/PowerShell. Raiz: esta pasta.
-- Não procurar, reutilizar ou migrar o sistema anterior. Regras ainda serão definidas.
-- Etapa atual: fundação técnica implementada (tarefa 1). Arquitetura/plano aprovados; não avançar para módulos operacionais sem novo pedido.
+- Não procurar, reutilizar ou migrar o sistema anterior. Regras aprovadas e limites em docs/modulos/.
+- Etapa atual: tarefas1/3 entregues (fundação, modelos, recebimento e estoque de caixas). Não avançar para OP/produção sem novo pedido.
 - Ler `docs/estado-atual.md` primeiro; consultar apenas os documentos do módulo necessário.
 - Brainstorming agora é propositivo: usar `docs/proposta-fluxo-operacional.md`, separar confirmado/proposto/pendente e agrupar somente dúvidas de negócio relevantes ao final. Não repetir perguntas resolvidas nem bloquear em escolhas técnicas reversíveis.
 - Usar Superpowers sob demanda: brainstorming → plano → implementação autorizada → testes e revisão.
 - Skills ME em `.agents/skills/`; o catálogo de procedência está em `docs/skills.md`.
-- Stack aprovada: React/TypeScript/Vite + Node/Fastify + SQLite local. Consultar docs/operacao-local.md e docs/verificacao-fundacao.md para executar/testar.
+- Stack aprovada: React/TypeScript/Vite + Node/Fastify + SQLite local. Consultar docs/operacao-local.md e docs/verificacao-modelos-caixas.md para executar/testar.
 - Não enviar dados operacionais, arquivos, capturas ou bancos para serviços externos; pesquisa pública só com termos genéricos.
 - Antes de alterar arquivo existente, fazer backup local fora do Git. Nunca sobrescrever backups.
 - Não executar scripts externos sem inspeção; não instalar dependências duplicadas.
-- Sem publicação, nuvem, custos, migração ou comandos destrutivos nesta etapa.
+- Sem publicação, nuvem, custos ou comandos destrutivos sem autorização. Evoluir SQLite somente por migrations aprovadas, com backup prévio.
 - Pesquisar com `rg` de forma dirigida; respeitar `.gitignore`/`.rgignore` e evitar ler dependências ou documentos grandes repetidamente.
 - Delegar somente tarefas independentes com arquivos distintos. Não paralelizar alterações no mesmo banco/repositório.
 - Testes futuros: dados sintéticos, banco isolado e Agent Browser em sessão própria, sem perfil pessoal.

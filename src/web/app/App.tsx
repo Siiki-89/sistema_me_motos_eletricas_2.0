@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { request, type Backup, type Health } from '../lib/api';
 import styles from './App.module.css';
+import { Models, Receiving, Stock } from './Operations';
 
 const date = (value: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 function ErrorNotice({ error }: { error: Error | null }) { return error ? <p className={styles.error} role="alert">{error.message}</p> : null; }
@@ -11,14 +12,14 @@ function ErrorNotice({ error }: { error: Error | null }) { return error ? <p cla
 function Home() {
   const health = useQuery({ queryKey: ['health'], queryFn: () => request<Health>('/health'), retry: false });
   return <>
-    <header className={styles.pageHeader}><p className={styles.context}>Seu ambiente de trabalho</p><h1>Uma base preparada<br />para começar.</h1><p>O ME Estoque está em preparação. Esta etapa organiza o ambiente local e a proteção dos dados.</p></header>
+    <header className={styles.pageHeader}><p className={styles.context}>Seu ambiente de trabalho</p><h1>Sua operação,<br />no seu computador.</h1><p>Cadastre modelos e cores, registre recebimentos e acompanhe o estoque de caixas com rastreabilidade.</p></header>
     <section className={styles.connection} aria-labelledby="connection-title">
       <h2 id="connection-title">Conexão local</h2>
       {health.isFetching ? <p role="status">Verificando o serviço local…</p> : health.data && !health.isError ? <div role="status"><p className={styles.serviceTitle}>{health.data.status === 'ok' ? 'Serviço local disponível' : 'Serviço local indisponível'}</p><p>{health.data.database.status === 'ready' ? 'Banco de dados pronto' : 'Banco de dados indisponível'} · versão {health.data.version}</p></div> : null}
       <ErrorNotice error={health.error} />
       <button type="button" className={styles.secondary} disabled={health.isFetching} onClick={() => void health.refetch()}>Verificar novamente</button>
     </section>
-    <section className={styles.note}><h2>Trabalho no seu computador</h2><p>A operação é local e não depende de internet. Os módulos de estoque e produção serão disponibilizados nas próximas etapas.</p><NavLink to="/protecao-dos-dados">Conhecer a proteção dos dados</NavLink></section>
+    <section className={styles.note}><h2>Trabalho no seu computador</h2><p>A operação é local e não depende de internet. Modelos, recebimento e estoque de caixas estão disponíveis. A proteção dos dados mantém cópias locais da operação.</p><NavLink to="/protecao-dos-dados">Conhecer a proteção dos dados</NavLink></section>
   </>;
 }
 
@@ -63,5 +64,5 @@ export function App() {
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(location.pathname);
   useEffect(() => { if (previousPath.current !== location.pathname) { main.current?.focus(); previousPath.current = location.pathname; } }, [location.pathname]);
-  return <div className={styles.shell}><a className={styles.skipLink} href="#main">Pular para o conteúdo</a><aside className={styles.sidebar}><div className={styles.brand}><span className={styles.monogram}>ME</span><div>Estoque <span>2.0</span></div></div><nav aria-label="Principal"><NavLink end to="/" className={({ isActive }) => isActive ? styles.active : ''}>Início</NavLink><NavLink to="/protecao-dos-dados" className={({ isActive }) => isActive ? styles.active : ''}>Proteção dos dados</NavLink></nav><p className={styles.localLabel}><span aria-hidden="true" />Ambiente local</p></aside><div className={styles.workspace}><div className={styles.topline}>ME Estoque <span>Fundação do sistema</span></div><main id="main" ref={main} tabIndex={-1}><Routes><Route path="/" element={<Home />} /><Route path="/protecao-dos-dados" element={<Backups />} /><Route path="*" element={<><h1>Página não encontrada</h1><NavLink to="/">Voltar ao início</NavLink></>} /></Routes></main><footer>ME Estoque 2.0 <span>Dados no seu computador.</span></footer></div></div>;
+  return <div className={styles.shell}><a className={styles.skipLink} href="#main">Pular para o conteúdo</a><aside className={styles.sidebar}><div className={styles.brand}><span className={styles.monogram}>ME</span><div>Estoque <span>2.0</span></div></div><nav aria-label="Principal"><NavLink end to="/" className={({ isActive }) => isActive ? styles.active : ''}>Início</NavLink><NavLink to="/modelos" className={({ isActive }) => isActive ? styles.active : ''}>Modelos</NavLink><NavLink to="/recebimento" className={({ isActive }) => isActive ? styles.active : ''}>Recebimento</NavLink><NavLink to="/estoque-de-caixas" className={({ isActive }) => isActive ? styles.active : ''}>Estoque de caixas</NavLink><NavLink to="/protecao-dos-dados" className={({ isActive }) => isActive ? styles.active : ''}>Proteção dos dados</NavLink></nav><p className={styles.localLabel}><span aria-hidden="true" />Ambiente local</p></aside><div className={styles.workspace}><header className={styles.topline}>ME Estoque <span>Operação local</span></header><main id="main" ref={main} tabIndex={-1}><Routes><Route path="/" element={<Home />} /><Route path="/modelos" element={<Models />} /><Route path="/recebimento" element={<Receiving />} /><Route path="/estoque-de-caixas" element={<Stock />} /><Route path="/protecao-dos-dados" element={<Backups />} /><Route path="*" element={<><h1>Página não encontrada</h1><NavLink to="/">Voltar ao início</NavLink></>} /></Routes></main><footer>ME Estoque 2.0 <span>Dados no seu computador.</span></footer></div></div>;
 }

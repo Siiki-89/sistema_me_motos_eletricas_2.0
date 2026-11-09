@@ -1,28 +1,9 @@
-export interface Health { app: string; version: string; status: string; database: { status: string; schemaVersion: number }; startedAt: string }
-export interface Backup { id: string; createdAt: string; schemaVersion: number; sizeBytes: number }
-
-// Only fixed, relative application endpoints are used. Browser supplies Origin.
-export async function request<T>(path: string, body?: unknown): Promise<T> {
-  let headers: Record<string, string> = {};
-  if (body !== undefined) {
-    const session = await request<{ csrfToken: string }>('/session');
-    headers = { 'Content-Type': 'application/json', 'x-csrf-token': session.csrfToken };
-  }
-  let response: Response;
-  try {
-    response = await fetch(`/api/v1${path}`, { credentials: 'same-origin', ...(body !== undefined ? { method: 'POST', headers, body: JSON.stringify(body) } : {}) });
-  } catch {
-    throw new Error('O serviço local não respondeu. Verifique se o aplicativo está aberto e tente novamente.');
-  }
-  if (!response.ok) {
-    // Server details may contain technical internals; expose safe action guidance.
-    const messages: Record<string, string> = {
-      '/health': 'Não foi possível verificar o serviço local.',
-      '/session': 'Não foi possível iniciar uma sessão local. Tente novamente.',
-      '/backups': body === undefined ? 'Não foi possível consultar as cópias locais.' : 'Não foi possível criar a cópia. Tente novamente.',
-      '/restore': 'Não foi possível restaurar a cópia. Seus dados de confirmação foram mantidos para uma nova tentativa.',
-    };
-    throw new Error(messages[path] ?? 'Não foi possível validar a cópia. Tente novamente antes de restaurar.');
-  }
-  return response.json() as Promise<T>;
+export class ApiError extends Error { constructor(message:string, public readonly ambiguous:boolean, public readonly code?:string){super(message);this.name='ApiError';} }
+export interface Health { app:string;version:string;status:string;database:{status:string;schemaVersion:number};startedAt:string }
+export interface Backup {id:string;createdAt:string;schemaVersion:number;sizeBytes:number}
+const domainMessages:Record<string,string>={VALIDATION_ERROR:'Revise os campos e formatos informados.',INVALID_DATE:'Informe uma data válida.',INVALID_QUANTITY:'Informe uma quantidade inteira válida.',REASON_REQUIRED:'Informe o motivo da correção.',INVALID_CODE:'Informe um código ME válido.',INVALID_COLOR:'Informe a cor ou selecione Não aplicável.',REFERENCE_CONFLICT:'A referência já existe ou possui vínculos incompatíveis.',VERSION_CONFLICT:'Este cadastro foi alterado. Feche a edição e consulte novamente.',IDEMPOTENCY_CONFLICT:'Esta operação já foi usada com outros dados. Consulte o histórico antes de iniciar uma nova operação.',INACTIVE_REFERENCE:'O modelo ou a cor está inativo. Selecione uma referência ativa.',INSUFFICIENT_STOCK:'Saldo insuficiente nesta origem. Revise seu histórico antes de corrigir.',ALREADY_REVERSED:'Este movimento já foi estornado.',VARIANT_PRODUCT_CONFLICT:'A cor deve permanecer no modelo de origem.',NOT_FOUND:'Registro não encontrado. Consulte novamente.',DATABASE_BUSY:'Banco ocupado. Tente novamente com esta mesma operação.',MAINTENANCE:'Serviço em manutenção. Tente novamente em instantes.'};
+export async function request<T>(path:string,body?:unknown,method:'POST'|'PUT'='POST'):Promise<T>{
+ let headers:Record<string,string>={};if(body!==undefined){const session=await request<{csrfToken:string}>('/session');headers={'Content-Type':'application/json','x-csrf-token':session.csrfToken};}
+ let response:Response;try{response=await fetch(`/api/v1${path}`,{credentials:'same-origin',...(body!==undefined?{method,headers,body:JSON.stringify(body)}:{})});}catch{throw new ApiError('O serviço local não respondeu. Verifique se o aplicativo está aberto e tente novamente.',true);}
+ if(!response.ok){const messages:Record<string,string>={'/health':'Não foi possível verificar o serviço local.','/session':'Não foi possível iniciar uma sessão local. Tente novamente.','/backups':body===undefined?'Não foi possível consultar as cópias locais.':'Não foi possível criar a cópia. Tente novamente.','/restore':'Não foi possível restaurar a cópia. Seus dados de confirmação foram mantidos para uma nova tentativa.'};if(messages[path])throw new Error(messages[path]);if(path.startsWith('/backups/'))throw new Error('Não foi possível validar a cópia. Tente novamente antes de restaurar.');const data=await response.json().catch(()=>null) as {error?:{code?:string}}|null;throw new ApiError(domainMessages[data?.error?.code??'']??'Não foi possível concluir a operação. Seus dados foram mantidos. Tente novamente.',response.status>=500,data?.error?.code);}return response.json() as Promise<T>;
 }

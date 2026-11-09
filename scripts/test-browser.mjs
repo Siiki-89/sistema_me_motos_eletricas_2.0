@@ -7,7 +7,7 @@ import Database from 'better-sqlite3';
 import { runtimePath } from './runtime.mjs';
 
 const scenario = process.argv[2];
-if (!['shell', 'backup'].includes(scenario)) throw new Error('Cenário obrigatório: shell ou backup.');
+if (!['shell', 'backup', 'receipt'].includes(scenario)) throw new Error('Cenário obrigatório: shell, backup ou receipt.');
 mkdirSync('artifacts/browser', { recursive: true });
 const evidence = mkdtempSync(resolve('artifacts/browser', `${scenario}-`));
 const dataDir = join(evidence, 'data');
@@ -50,6 +50,59 @@ try {
   browser('find','role','link','click','--name','Proteção dos dados','--exact');
   browser('wait','--text','Nenhuma cópia local disponível.');
   writeFileSync(join(evidence,'backup-snapshot.txt'), browser('snapshot','-i'));
+  if (scenario === 'receipt') {
+    const click = name => browser('find','role','button','click','--name',name,'--exact');
+    const link = name => browser('find','role','link','click','--name',name,'--exact');
+    const fill = (label,value) => browser('find','label',label,'fill',value);
+    const api = async path => (await fetch(`${base}/api/v1${path}`)).json();
+    link('Modelos');
+    browser('wait','--text','Nenhum modelo encontrado.');
+    click('Cadastrar modelo');
+    fill('Código ME','SYN-BROWSER'); fill('Nome comercial / modelo','Moto de teste');
+    click('Salvar modelo'); browser('wait','--text','Modelo salvo.');
+    fill('Nova cor','Azul'); click('Adicionar cor'); browser('wait','--text','Cor salva.');
+    browser('screenshot',join(evidence,'model-desktop.png'),'--full');
+    click('Fechar');
+    fill('Pesquisar modelos','SYN-BROWSER');
+    browser('wait','--fn',"location.search.includes('q=SYN-BROWSER')");
+    const product = (await api('/catalog/products?q=SYN-BROWSER')).items[0];
+    assert.equal(product.variants.length,1);
+    link('Recebimento');
+    browser('wait','--text','SYN-BROWSER');
+    browser('select','select[name="modelo"]',product.id);
+    browser('select','select[name="cor"]',product.variants[0].id);
+    fill('Quantidade','2'); fill('Fornecedor','Fornecedor sintético');
+    fill('Nota fiscal','NF-TESTE'); fill('Lote','LOTE-TESTE');
+    browser('screenshot',join(evidence,'receipt-desktop.png'),'--full');
+    click('Revisar recebimento'); browser('wait','--text','Confirmar recebimento');
+    assert.equal((await api('/boxes/summary')).physical,0);
+    click('Confirmar entrada'); browser('wait','--text','Entrada registrada.');
+    assert.equal((await api('/boxes/summary')).physical,2);
+    link('Estoque de caixas'); browser('wait','--text','SYN-BROWSER');
+    browser('screenshot',join(evidence,'stock-desktop.png'),'--full');
+    click('Origens e histórico SYN-BROWSER / Azul'); browser('wait','--text','LOTE-TESTE');
+    click('Ver origem e histórico LOTE-TESTE'); browser('wait','--text','Detalhes da origem');
+    click('Ajustar origem LOTE-TESTE'); fill('Variação de caixas','-1'); fill('Motivo da correção','Contagem sintética');
+    click('Confirmar ajuste'); browser('wait','--text','Correção registrada.');
+    browser('wait','--fn',"document.querySelector('[role=dialog] table tbody tr')?.textContent.includes('Ajuste')");
+    assert.equal((await api('/boxes/summary')).physical,1);
+    browser('click','[role="dialog"] table tbody tr:first-child button');
+    fill('Motivo da correção','Desfazer ajuste sintético'); click('Confirmar estorno');
+    browser('wait','--fn',"document.querySelector('[role=dialog] table tbody tr')?.textContent.includes('Estorno')");
+    assert.equal((await api('/boxes/summary')).physical,2);
+    browser('screenshot',join(evidence,'history-desktop.png'),'--full'); click('Fechar');
+    browser('open',`${base}/estoque-de-caixas`); browser('wait','--text','SYN-BROWSER');
+    const stock=(await api('/boxes/stock')).items[0];
+    assert.deepEqual([stock.physical,stock.reserved,stock.available],[2,0,2]);
+    const db = new Database(join(dataDir,'me-estoque.sqlite'),{readonly:true});
+    assert.equal(db.prepare('SELECT COUNT(*) n FROM box_movement').get().n,3);
+    assert.equal(db.pragma('integrity_check',{simple:true}),'ok');db.close();
+    browser('set','viewport','390','844');
+    browser('screenshot',join(evidence,'stock-mobile.png'),'--full');
+    assert.match(evaluate('document.documentElement.scrollWidth <= innerWidth'), /true/);
+    writeFileSync(join(evidence,'stock-a11y.json'),browser('a11y','--json'));
+    link('Proteção dos dados');
+  }
   if (scenario === 'backup') {
     browser('find','role','button','click','--name','Criar cópia agora','--exact');
     browser('wait','--text','Cópia criada com sucesso.');
@@ -76,7 +129,7 @@ try {
   browser('network','unroute','*/api/v1/health');
   browser('find','role','button','click','--name','Verificar novamente','--exact');
   browser('wait','--text','Serviço local disponível');
-  writeFileSync(join(evidence,'result.json'), JSON.stringify({scenario,passed:true,health,checks:['local communication','keyboard','mobile no overflow','external domains blocked','error recovery',...(scenario==='backup'?['create','validate','confirm','restore real SQLite']:[])]},null,2));
+  writeFileSync(join(evidence,'result.json'), JSON.stringify({scenario,passed:true,health,checks:['local communication','keyboard','mobile no overflow','external domains blocked','error recovery',...(scenario==='backup'?['create','validate','confirm','restore real SQLite']:[]),...(scenario==='receipt'?['create model/color','search URL','receipt confirmation before mutation','stock 2','origin details','adjust -1','reverse adjustment +1','reload stock 2/0/2','SQLite history and integrity']:[])]},null,2));
   console.log(`PASS ${scenario}: ${evidence}`);
 } catch (error) {
   for (const command of ['snapshot','errors','console']) {

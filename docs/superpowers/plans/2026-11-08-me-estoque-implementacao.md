@@ -1,6 +1,6 @@
 # ME Estoque 2.0 — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans para executar sequencialmente após aprovação. superpowers:subagent-driven-development é alternativa somente se escolhida posteriormente; não iniciar implementação nem delegação agora. Passos usam checkboxes para acompanhamento.
+> **Execução vigente:** o usuário autorizou subagent-driven-development/TDD/revisão nas etapas3/4. Tarefas1/3 entregues e tarefa2 parcial; demais tarefas exigem novo pedido. Não reabrir aprovação já concedida nem antecipar OP.
 
 **Goal:** Entregar gestão local de caixas, unidades e produção com estoque consistente, qualidade rastreável e recuperação verificável.
 
@@ -10,7 +10,7 @@
 
 **Spec:** [Arquitetura técnica](../../arquitetura-tecnica.md), [fluxo operacional](../../proposta-fluxo-operacional.md), [regras aprovadas](../../modulos/estoque-producao.md) e [invariantes/casos de conflito](../../validacao-consistencia.md).
 
-**Status em 09/11/2026:** arquitetura/plano aprovados. Tarefa 1 implementada e validada (24 testes, build e navegador), com dependência mínima de SQLite/migrations/backup/restauração exigida pelo pedido. Tarefa 2 permanece parcial; tarefas 3–12 não iniciadas. Detalhes e evidências em [verificação da fundação](../../verificacao-fundacao.md).
+**Status em 09/11/2026:** etapas 3 e 4 autorizadas. Tarefas1 e3 implementadas; tarefa2 parcial (persistência, auditoria/idempotência e recuperação manual); tarefas4–12 pendentes. Evidências em [verificação modelos/caixas](../../verificacao-modelos-caixas.md). Não avançar automaticamente.
 
 ## Global Constraints
 
@@ -18,7 +18,7 @@
 
 Implementação real usa `tests/server/foundation.test.ts`, `tests/web/app.test.tsx` e `tests/tooling/`, em lugar dos nomes iniciais ilustrados na tarefa 1. Tokens ficam em `src/web/app/tokens.css`; schemas/DTOs mínimos em `src/shared/contracts/foundation.ts`. `buildApp` permanece síncrono. Tipos genéricos de comandos de domínio foram adiados até existirem consumidores. O runner aceita `shell` e `backup`, sem arquivos JSON de cenário redundantes. Backend e UI foram delegados separadamente conforme pedido posterior do usuário, com revisão independente.
 
-Recorte mínimo da tarefa 2 já executado: migration técnica versão1 com checksum/compatibilidade, persistência, FK/transação, backup manual validado, restauração com safety backup e bloqueio por journal interrompido. Não marcar seus passos compostos como completos: auditoria/idempotência de domínio, retenção/agendamento, testes de crash abrangentes e recuperação automática continuam pendentes. Não existe tabela operacional de estoque.
+Recorte mínimo da tarefa 2 já executado: migration técnica versão1 com checksum/compatibilidade, persistência, FK/transação, backup manual validado, restauração com safety backup e bloqueio por journal interrompido. Não marcar seus passos compostos como completos: retenção/agendamento, testes de crash abrangentes e recuperação automática continuam pendentes. A etapa4 acrescentou migration002 e domínio operacional. Auditoria/idempotência já entregues; backup agendado, retenção e recuperação automática excepcional permanecem pendentes.
 
 - Windows/PowerShell; um computador; SQLite exclusivamente local; funções essenciais offline.
 - Produto novo. Não reutilizar código, migrar planilha, executar ZIP ou cadastrar catálogos de referência automaticamente.
@@ -91,6 +91,12 @@ expect(afterRollback).toEqual(before);
 expect(liveHashAfterRejectedRestore).toBe(liveHashBefore);
 ```
 
+## Registro da etapa 4
+
+Prompt posterior autorizou tarefa3 e dependências mínimas restantes da tarefa2, com SDD/TDD/revisão. Estrutura real: modules/{catalog,boxes,domain,queries,operations}.ts e platform/commands.ts; UI features/catalog/Models.tsx, features/boxes/{Receiving,Stock}.tsx e features/common/Operational.tsx. Testes em tests/server/boxes.test.ts e tests/web/operations.test.tsx. Cenário navegador: scripts/test-browser.mjs receipt. Não foram criados placeholders de módulos futuros.
+
+Nesta entrega R=0 e B não existe; D=S−R. Campos e regras em [catálogo e caixas](../../modulos/catalogo-caixas.md). A tarefa4 adicionará reservas/bloqueios com seus próprios testes. Produto/cor são comandos separados, origem agregada guarda snapshots; correções exigem motivo. Versão otimista e operação UUID protegem repetição/conflito. Consultas SQL paginadas50/máximo100. Migration002 com backup pré-upgrade e restauração compatível1/2. A tarefa2 continua parcial: não marcar seus passos compostos como integralmente concluídos.
+
 ## Fase B — caixas e identidade individual
 
 ### Tarefa 3 — Cadastros, recebimento e saldo de caixas
@@ -99,11 +105,11 @@ expect(liveHashAfterRejectedRestore).toBe(liveHashBefore);
 
 **Interfaces:** `createVariant(ctx, {meCode, commercialName?, color, colorApplicable}, meta): Result<Variant>`; `receiveBoxes(ctx, {lines: {variantId, quantity}[]}, meta): Result<Receipt>`; `reverseReceipt(ctx, {receiptId, reason}, meta): Result<ReceiptReversal>`; `getBoxBalance(ctx, variantId): {S:number; R:number; B:number; D:number}`. DTOs com ID e version quando mutáveis. Busca paginada `Page<VariantBalance>`. Estorno de entrada compensa movimentos e rejeita redução incompatível com S/R/B; tarefa 4 acrescenta testes com reservas.
 
-- [ ] Escrever casos de código compartilhado entre unidades futuras, cadastro variante único, quantidade zero/fracionada recusada, entrada repetida, estorno idempotente/compensatório e nome comercial ausente permitido.
-- [ ] Executar `npm run test -- tests/boxes.test.ts`; esperar FAIL.
-- [ ] Implementar cadastros e recebimentos com auditoria, livro de movimentos e tela por código/cor; sem IDs de caixas físicas e sem carregar catálogo de referência.
-- [ ] Reexecutar (PASS); `npm run test:browser -- receipt`: registrar 2 caixas, atualizar página, pesquisar e conferir D=2.
-- [ ] Commit `feat: receive boxes by product and color`.
+- [x] Escrever casos de código compartilhado entre unidades futuras, cadastro variante único, quantidade zero/fracionada recusada, entrada repetida, estorno idempotente/compensatório e nome comercial ausente permitido.
+- [x] Executar `npm run test -- tests/boxes.test.ts`; esperar FAIL.
+- [x] Implementar cadastros e recebimentos com auditoria, livro de movimentos e tela por código/cor; sem IDs de caixas físicas e sem carregar catálogo de referência.
+- [x] Reexecutar (PASS); `npm run test:browser -- receipt`: registrar 2 caixas, atualizar página, pesquisar e conferir D=2.
+- [x] Commit `feat: receive boxes by product and color`.
 
 ```ts
 expect(balanceAfterReceivingTwo).toEqual({S:2,R:0,B:0,D:2});

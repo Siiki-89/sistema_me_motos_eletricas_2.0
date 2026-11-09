@@ -1,3 +1,5 @@
+import {registerOperations,DomainError} from './modules/operations.js';
+import {validateSchema} from './platform/database.js';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cookie from '@fastify/cookie';
 import staticFiles from '@fastify/static';
@@ -37,7 +39,10 @@ export function buildApp(options: AppOptions): FastifyInstance {
     if (store.busy && request.url !== '/api/v1/health') return reply.code(503).send(errorPayload('MAINTENANCE', 'Recuperação em andamento. Aguarde.', request.id));
   });
   app.setErrorHandler((error, request, reply) => {
-    const details = error as { validation?: unknown; statusCode?: number };
+    const details = error as { validation?: unknown; statusCode?: number; code?: string };
+    if (error instanceof DomainError) return reply.code(error.status).send(errorPayload(error.code,error.message,request.id));
+    if (details.code === 'SQLITE_BUSY') return reply.code(503).send(errorPayload('DATABASE_BUSY','Banco ocupado. Aguarde e repita a mesma operação.',request.id));
+    if (details.code?.startsWith('SQLITE_CONSTRAINT')) return reply.code(409).send(errorPayload('REFERENCE_CONFLICT','Referência repetida ou vínculo inválido. Confira os dados.',request.id));
     if (details.validation || details.statusCode === 400) return reply.code(400).send(errorPayload('VALIDATION_ERROR', 'Confira os dados informados.', request.id));
     if (error instanceof MaintenanceError) return reply.code(503).send(errorPayload('MAINTENANCE', 'Operação em andamento. Aguarde.', request.id));
     if (error instanceof BackupError) return reply.code(400).send(errorPayload('INVALID_BACKUP', error.message, request.id));
@@ -49,7 +54,7 @@ export function buildApp(options: AppOptions): FastifyInstance {
     setImmediate(() => { void app.close(); });
     return reply;
   });
-  app.get('/api/v1/health', () => ({ app: 'me-estoque', version: '0.1.0', instanceId, status: 'ok', database: { status: 'ready', schemaVersion: 1 }, startedAt }));
+  app.get('/api/v1/health', () => ({ app: 'me-estoque', version: '0.1.0', instanceId, status: 'ok', database: { status: 'ready', schemaVersion: validateSchema(store.db) }, startedAt }));
   app.get('/api/v1/session', (request, reply) => {
     const existing = sessions.get(request.cookies['me_session'] ?? '');
     if (existing && existing.expires > Date.now()) return { csrfToken: existing.token };
@@ -70,6 +75,7 @@ export function buildApp(options: AppOptions): FastifyInstance {
   app.post<{ Body: RestoreRequest }>('/api/v1/restore', { schema: { body: RestoreBody } }, async request => {
     const safetyBackupId = await store.restore(request.body.backupId); return { restored: true, safetyBackupId };
   });
+  registerOperations(app,store);
   if (options.webDir) {
     if (!isAbsolute(options.webDir) || !existsSync(join(options.webDir, 'index.html'))) { store.close(); throw new Error('Arquivos locais da interface não encontrados.'); }
     app.register(staticFiles, { root: options.webDir, index: 'index.html' });

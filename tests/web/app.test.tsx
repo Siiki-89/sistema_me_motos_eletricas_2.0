@@ -55,7 +55,7 @@ describe('fundação local', () => {
   });
   it('oferece navegação por teclado até a proteção e permite criar uma cópia real', async () => {
     mount(); const user = userEvent.setup(); await user.tab(); expect(screen.getByText('Pular para o conteúdo')).toHaveFocus();
-    await user.tab(); await user.tab(); expect(screen.getByRole('link', { name: 'Proteção dos dados' })).toHaveFocus(); await user.keyboard('{Enter}');
+    await user.tab(); await user.tab(); await user.tab(); await user.tab(); await user.tab(); expect(screen.getByRole('link', { name: 'Proteção dos dados' })).toHaveFocus(); await user.keyboard('{Enter}');
     expect(await screen.findByText('Nenhuma cópia local disponível.')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Criar cópia agora' }));
     expect(await screen.findByText('Cópia criada com sucesso.')).toBeVisible();

@@ -23,9 +23,10 @@ export class DatabaseStore {
   readonly backupDir: string;
   constructor(readonly dataDir: string) {
     if (existsSync(join(dataDir, 'restore-pending.json'))) throw new BackupError('Restauração pendente. Preserve os arquivos locais para recuperação.');
-    this.db = openDatabase(dataDir); this.backupDir = join(dataDir, 'backups');
+    this.backupDir = join(dataDir, 'backups');
     mkdirSync(this.backupDir, { recursive: true });
-    if (lstatSync(this.backupDir).isSymbolicLink()) { this.db.close(); throw new BackupError('Diretório de cópias inválido.'); }
+    if (lstatSync(this.backupDir).isSymbolicLink()) throw new BackupError('Diretório de cópias inválido.');
+    this.db = openDatabase(dataDir);
   }
   close(): void { if (this.db.open) this.db.close(); }
   private paths(id: string): { database: string; manifest: string } {
@@ -37,7 +38,7 @@ export class DatabaseStore {
     if (!regularFile(paths.manifest) || !regularFile(paths.database)) throw new BackupError('Cópia não encontrada.');
     try {
       const item = JSON.parse(readFileSync(paths.manifest, 'utf8')) as Manifest;
-      if (item.id !== id || item.schemaVersion !== SCHEMA_VERSION || !Number.isSafeInteger(item.sizeBytes) || item.sizeBytes <= 0 || !Number.isFinite(Date.parse(item.createdAt)) || !/^[0-9a-f]{64}$/.test(item.sha256)) throw new Error();
+      if (item.id !== id || ![1, SCHEMA_VERSION].includes(item.schemaVersion) || !Number.isSafeInteger(item.sizeBytes) || item.sizeBytes <= 0 || !Number.isFinite(Date.parse(item.createdAt)) || !/^[0-9a-f]{64}$/.test(item.sha256)) throw new Error();
       return item;
     } catch { throw new BackupError('Manifesto de cópia incompatível.'); }
   }
@@ -53,7 +54,7 @@ export class DatabaseStore {
     try {
       copy = new Database(path, { readonly: true, fileMustExist: true });
       if (copy.pragma('integrity_check', { simple: true }) !== 'ok' || (copy.pragma('foreign_key_check') as unknown[]).length !== 0) throw new Error();
-      validateSchema(copy);
+      if (validateSchema(copy) !== item.schemaVersion) throw new Error();
     } catch { throw new BackupError('Cópia inválida ou incompatível.'); } finally { copy?.close(); }
     const { sha256: _hash, ...publicItem } = item; return publicItem;
   }

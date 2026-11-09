@@ -1,6 +1,8 @@
+> **Etapa 4 disponível:** Modelos, Recebimento, Estoque de caixas e histórico. Consulte [regras](modulos/catalogo-caixas.md) e [verificação](verificacao-modelos-caixas.md). Trechos históricos da fundação abaixo permanecem como referência de instalação.
+
 # Fundação local — iniciar e proteger os dados
 
-Entrega 0.1.0, 09/11/2026. Somente fundação: interface inicial, conexão local e cópias/restauração. Não há cadastro de motos, caixas, OPs ou estoque. Este checkout está preparado neste computador; ainda não é instalador de distribuição.
+Entrega de modelos e caixas, 09/11/2026. Interface operacional, conexão local, estoque e cópias/restauração. OP, chassi e produção ainda não estão implementados. Este checkout está preparado neste computador; ainda não é instalador de distribuição.
 
 ## Iniciar no Windows
 
@@ -64,3 +66,17 @@ Esses cenários abrem sessões próprias do Agent Browser, com Chrome local, sem
 ## Limites de segurança
 
 API acessível somente por loopback, com validação Host/Origin, cookie HttpOnly/SameSite, CSRF, schemas e erros sanitizados. Isso não é autenticação individual nem impede um administrador local de acessar arquivos. Banco/auditoria multiusuário, assinatura digital, autorização de negócio e acesso em rede não fazem parte desta entrega.
+
+## Usar modelos e caixas
+
+1. Abra **Modelos → Cadastrar modelo**, informe código ME e, se desejar, nome/observações. Clique em **Salvar modelo**.
+2. Cadastre as cores da referência ou escolha explicitamente **Cor não aplicável**. Nenhum catálogo vem preenchido.
+3. Em **Recebimento**, selecione modelo/cor, quantidade e data. Fornecedor/NF/lote/observações são opcionais. **Revisar recebimento** apresenta o resumo; só **Confirmar entrada** altera o saldo.
+4. Consulte **Estoque de caixas**. Física e disponível acompanham as entradas; reservada permanece0. Use **Origens e histórico** para consultar documentos, ajustar quantidades com motivo ou estornar um movimento.
+5. Uma correção cria outro registro. Não apaga a entrada e não permite deixar saldo negativo. Inativar referência preserva histórico; reative antes de receber novamente.
+
+Ao perder uma resposta, repita a mesma confirmação: a chave da tentativa evita duplicação. Só inicie outra operação depois de conferir o histórico. Não recarregue nem feche o navegador com uma tentativa incerta sem antes conferir seu resultado. O rascunho não é persistente.
+
+Após atualizar o código: encerrar instância antiga, executar build e iniciar novamente. Ao abrir banco1, a versão2 cria uma cópia consistente validada antes da migration002; mantém a001. Proteção dos dados aceita backups1/2; restauração1 atualiza a estrutura e cria cópia de segurança do estado anterior. Não executar programa antigo sobre banco2.
+
+Para a jornada isolada adicional: scripts/npm.ps1 run test:browser receipt. Nenhum cenário recebe dados reais.

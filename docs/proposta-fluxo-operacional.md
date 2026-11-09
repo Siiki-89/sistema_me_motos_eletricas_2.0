@@ -1,3 +1,5 @@
+> **Etapa4 implementada (09/11/2026):** cadastro e estoque de caixas conforme [registro do módulo](modulos/catalogo-caixas.md). [Evidências](verificacao-modelos-caixas.md). Demais fluxos continuam planejados; não considerar descrições futuras como funcionalidades já entregues.
+
 # ME Estoque 2.0 — proposta integrada de fluxo operacional
 
 **Atualização de 09/11/2026:** arquitetura e plano foram aprovados. A primeira entrega da fundação foi implementada e validada; os demais módulos continuam planejados. Consulte [estado atual](estado-atual.md) e [verificação da fundação](verificacao-fundacao.md). As referências a aprovação futura abaixo pertencem ao registro anterior do planejamento.
