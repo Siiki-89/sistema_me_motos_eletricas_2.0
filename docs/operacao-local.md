@@ -1,8 +1,8 @@
-> **Etapa 4 disponível:** Modelos, Recebimento, Estoque de caixas e histórico. Consulte [regras](modulos/catalogo-caixas.md) e [verificação](verificacao-modelos-caixas.md). Trechos históricos da fundação abaixo permanecem como referência de instalação.
+> **Etapa5:** OPs e unidades implementadas, além de modelos/caixas. Consulte [regras](modulos/op-unidades.md) e [verificação](verificacao-op-unidades.md). Ativação com dados reais pendente: leia [estado atual](estado-atual.md); não iniciar base vazia como substituta da anterior.
 
 # Fundação local — iniciar e proteger os dados
 
-Entrega de modelos e caixas, 09/11/2026. Interface operacional, conexão local, estoque e cópias/restauração. OP, chassi e produção ainda não estão implementados. Este checkout está preparado neste computador; ainda não é instalador de distribuição.
+Entrega de OP e individualização, 10/11/2026. Interface, conexão local, estoque, OP, chassi e cópias/restauração. Produção detalhada, qualidade e expedição ainda não implementadas. Este checkout está preparado neste computador; ainda não é instalador de distribuição.
 
 ## Iniciar no Windows
 
@@ -72,11 +72,19 @@ API acessível somente por loopback, com validação Host/Origin, cookie HttpOnl
 1. Abra **Modelos → Cadastrar modelo**, informe código ME e, se desejar, nome/observações. Clique em **Salvar modelo**.
 2. Cadastre as cores da referência ou escolha explicitamente **Cor não aplicável**. Nenhum catálogo vem preenchido.
 3. Em **Recebimento**, selecione modelo/cor, quantidade e data. Fornecedor/NF/lote/observações são opcionais. **Revisar recebimento** apresenta o resumo; só **Confirmar entrada** altera o saldo.
-4. Consulte **Estoque de caixas**. Física e disponível acompanham as entradas; reservada permanece0. Use **Origens e histórico** para consultar documentos, ajustar quantidades com motivo ou estornar um movimento.
+4. Consulte **Estoque de caixas**. Disponível = física − reservada − bloqueada. Use **Origens e histórico** para documentos, ajustes com motivo e estornos elegíveis. Conversões não têm estorno genérico.
 5. Uma correção cria outro registro. Não apaga a entrada e não permite deixar saldo negativo. Inativar referência preserva histórico; reative antes de receber novamente.
 
 Ao perder uma resposta, repita a mesma confirmação: a chave da tentativa evita duplicação. Só inicie outra operação depois de conferir o histórico. Não recarregue nem feche o navegador com uma tentativa incerta sem antes conferir seu resultado. O rascunho não é persistente.
 
-Após atualizar o código: encerrar instância antiga, executar build e iniciar novamente. Ao abrir banco1, a versão2 cria uma cópia consistente validada antes da migration002; mantém a001. Proteção dos dados aceita backups1/2; restauração1 atualiza a estrutura e cria cópia de segurança do estado anterior. Não executar programa antigo sobre banco2.
+Após atualizar: confirmar pasta/saldos da base correta, encerrar instância antiga, executar build e iniciar com a mesma pasta explícita. Ao abrir banco1/2, versão3 cria cópia consistente validada antes das migrations pendentes; mantém001/002. Proteção dos dados aceita backups1/2/3. Não executar programa antigo sobre banco3.
 
 Para a jornada isolada adicional: scripts/npm.ps1 run test:browser receipt. Nenhum cenário recebe dados reais.
+
+## Usar OPs e unidades
+
+**Ordens de produção → Nova OP → Revisar reserva → Criar OP e reservar 1 caixa.** Impressão/reimpressão não alteram saldo. No detalhe, **Iniciar transcrição e baixar 1 caixa → Confirmar baixa de 1 caixa** individualiza a moto, mesmo sem chassi. Depois, **Salvar alterações** completa dados sem nova baixa.
+
+Salvar mudanças antes de concluir registro administrativo. Cancelamento exige motivo e, antes da conversão, condição física da caixa. Aberta fica bloqueada: lista de OPs oferece regularização ou liberação confirmando caixa fechada. Após conversão, cancelar não devolve caixa. Estes comandos não aprovam produção ou qualidade.
+
+Jornada isolada: `scripts/npm.ps1 run test:browser orders`. Sessão própria e base sintética; sem domínios externos. Rascunhos não persistem ao fechar/recarregar. Resolver resultado incerto e consultar histórico antes de outra intenção.

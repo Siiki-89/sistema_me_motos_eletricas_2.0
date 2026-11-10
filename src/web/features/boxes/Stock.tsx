@@ -84,7 +84,7 @@ function StockDetail({ row, close }: {
             <td>{m.quantity > 0 ? '+' : ''}{num(m.quantity)}</td>
             <td>{m.reason || 'Recebimento'}<small>{m.actorId === 'local-operator' ? 'Operador local' : m.actorId}</small>
             </td>
-            <td>{m.kind !== 'reversal' && <button className={s.secondary} disabled={!!payload || save.isPending} onClick={() => start({ originId: m.originId, movementId: m.id })}>Estornar movimento {civil(m.effectiveDate)}</button>}{m.reversesId && <small>Compensa movimento {m.reversesId}</small>}</td>
+            <td>{(m.kind === 'receipt' || m.kind === 'adjustment') && <button className={s.secondary} disabled={!!payload || save.isPending} onClick={() => start({ originId: m.originId, movementId: m.id })}>Estornar movimento {civil(m.effectiveDate)}</button>}{m.reversesId && <small>Compensa movimento {m.reversesId}</small>}</td>
             </tr>)}</tbody>
         </table>
         </div>}<Pager data={movements.data} page={movePage} setPage={setMovePage} label="movimentos"/>{correction && <section className={s.correction}>
@@ -120,10 +120,10 @@ export function Stock() {
         <strong>{num(summary.data.reserved)}</strong>
         </div>
         <div>
-        <span>Disponível</span>
+        <span>Bloqueada</span><strong>{num(summary.data.blocked ?? 0)}</strong></div><div><span>Disponível</span>
         <strong>{num(summary.data.available)}</strong>
         </div>
-        <p>Disponível = física − reservada.<br />Reservas por OP serão disponibilizadas em outra etapa.</p>
+        <p>Disponível = física − reservada − bloqueada.</p>
         </> : null}<ErrorNotice error={summary.error}/>
     </div>
     <div className={s.toolbar}>
@@ -149,7 +149,7 @@ export function Stock() {
         <th>Status</th>
         <th className={s.number}>Física</th>
         <th className={s.number}>Reservada</th>
-        <th className={s.number}>Disponível</th>
+        <th className={s.number}>Bloqueada</th><th className={s.number}>Disponível</th>
         <th>Rastreabilidade</th>
         </tr>
         </thead>
@@ -160,7 +160,7 @@ export function Stock() {
             <td>{r.active ? 'Ativa' : 'Inativa'}</td>
             <td className={s.number}>{num(r.physical)}</td>
             <td className={s.number}>{num(r.reserved)}</td>
-            <td className={`${s.number} ${s.balance}`}>{num(r.available)}</td>
+            <td className={s.number}>{num(r.blocked ?? 0)}</td><td className={`${s.number} ${s.balance}`}>{num(r.available)}</td>
             <td>
             <button className={s.secondary} onClick={() => setSelected(r)}>Origens e histórico {r.meCode} / {color(r.color)}</button>
             </td>

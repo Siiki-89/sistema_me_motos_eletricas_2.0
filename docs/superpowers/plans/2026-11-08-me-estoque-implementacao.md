@@ -301,3 +301,21 @@ Autor-revisão documental: requisitos principais têm tarefa; assinaturas usam o
 Pendências de conteúdo: catálogo oficial de extras e aplicabilidade final dos checklists. O mecanismo genérico é implementável após aprovação; nenhuma lista real ou aprovação de qualidade por modelo será inventada. Regras de descarte/perdas/reembalagem física ficam fora do fluxo inicial; registros administrativos não equivalem a implementação dessas políticas.
 
 **Próximo passo:** aguardar novo pedido para a próxima entrega. A aprovação da arquitetura já ocorreu; ela não autoriza executar automaticamente as 12 tarefas.
+
+## Registro da etapa5 — 10/11/2026
+
+Implementado o recorte autorizado das tarefas4/5 e proteções mínimas da6. Código real em modules/orders.ts, orders-domain.ts, contracts/orders.ts, migration003-orders-units.sql e features/orders/. Não criar migrations004/005 apenas para corresponder aos nomes propostos acima: reserva e unidade foram aprovadas/entregues juntas em003 aditiva.
+
+- [x] OP inicial com reserva1, FIFO contábil, número não reutilizado, cancelamento fechado/aberto e regularização B→R.
+- [x] Conversão única/parcial, unidade UUID, chassi opcional único, origem preservada, edição otimista e repetição segura.
+- [x] Cancelamento pós-conversão sem retorno de caixa; índice de uma OP ativa por unidade.
+- [x] Lista/pesquisa/filtros, criação, detalhe/transcrição, unidade/histórico, ficha imprimível e B nos saldos.
+- [x] Testes reais em orders.test.ts/orders-rules.test.ts (servidor) e orders.test.tsx (web); RED/GREEN registrados na verificação. Não confundir os comandos propostos acima com evidência executada.
+- [x] Agent Browser orders, receipt e backup com SQLite sintético; impressão de uma página inspecionada.
+- [ ] Alteração da variante de uma reserva existente (parte da tarefa4 original, fora do prompt atual).
+- [ ] Continuidade/retrabalho e correções completas da tarefa6. Somente proteções mínimas entregues.
+- [ ] Localizar/conciliar banco operacional antes da ativação. Não recriar lançamentos automaticamente.
+
+Os checklists originais4/5 descrevem escopo/testes mais amplos e não são marcados integralmente: este registro é o estado efetivamente entregue. Não afirmar rollback injetado em cada instrução: houve falha intermediária transacional e verificações de invariantes, além de disputa real entre processos.
+
+Rulings: FIFO é origem contábil, não caixa física identificada; responsáveis opcionais textuais serão normalizados futuramente se necessário; mesmo branch/raiz autorizados, sem worktree duplicado; estados administrativos não avançam montagem/qualidade. Custo se revistos: ajuste de regra/UX e eventual migration incremental, preservando histórico.

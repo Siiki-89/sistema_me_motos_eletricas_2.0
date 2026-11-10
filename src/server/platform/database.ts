@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const DATABASE_NAME = "me-estoque.sqlite";
 export type SqliteDatabase = Database.Database;
 export function assertLocalDirectory(dir: string): void {
@@ -19,7 +19,7 @@ function migrationRoot(): string {
     }
     throw new Error("Prepara\u00E7\u00E3o n\u00E3o encontrada.");
 }
-const files = ["001-foundation.sql", "002-boxes.sql"];
+const files = ["001-foundation.sql", "002-boxes.sql", "003-orders-units.sql"];
 export function migrationChecksum(dir = migrationRoot(), version = 1): string {
     return createHash("sha256").update(readFileSync(join(dir, files[version - 1]!))).digest("hex");
 }
@@ -35,10 +35,11 @@ export function validateSchema(db: SqliteDatabase, dir = migrationRoot()): numbe
         throw new Error("Vers\u00E3o ou assinatura de banco incompat\u00EDvel.");
     const required=rows.length===1?['app_metadata']:['app_metadata','actor','product','variant','box_origin','box_movement','command_receipt','audit_event'];
     const present=new Set((db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as {name:string}[]).map(r=>r.name));
+    if(rows.length>=3) required.push('production_order','reservation','unit','box_conversion','box_block','order_event','order_sequence');
     if(required.some(name=>!present.has(name)))throw new Error('Estrutura incompatível.');
     return rows.length;
 }
-function preUpgrade(db: SqliteDatabase, version: number): void {
+function preUpgrade(db: SqliteDatabase, version: number, migrationsDir: string): void {
     const dir = join(dirname(db.name), "backups");
     mkdirSync(dir, { recursive: true });
     assertLocalDirectory(dir);
@@ -48,7 +49,7 @@ function preUpgrade(db: SqliteDatabase, version: number): void {
     db.prepare("VACUUM INTO ?").run(path);
     const copy = new Database(path, { readonly: true });
     try {
-        if (validateSchema(copy) !== version || copy.pragma("integrity_check", { simple: true }) !== "ok" || (copy.pragma("foreign_key_check") as unknown[]).length)
+        if (validateSchema(copy, migrationsDir) !== version || copy.pragma("integrity_check", { simple: true }) !== "ok" || (copy.pragma("foreign_key_check") as unknown[]).length)
             throw new Error("Falha na valida\u00E7\u00E3o pr\u00E9-upgrade.");
     }
     finally {
@@ -62,7 +63,7 @@ export function migrateDatabase(db: SqliteDatabase, dir = migrationRoot()): void
     if (present) {
         version = validateSchema(db, dir);
         if (version < SCHEMA_VERSION)
-            preUpgrade(db, version);
+            preUpgrade(db, version, dir);
     }
     else if (db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().length)
         throw new Error("Banco sem hist\u00F3rico reconhecido.");

@@ -76,3 +76,4 @@
 
 .dialog fieldset{border:0;padding:0;margin:0;min-width:0}
 .dialog{overscroll-behavior:contain}.tableWrap td,.origin,.tag{overflow-wrap:anywhere}.tag{white-space:normal}.toolbar,.receiving section{min-width:0}
+.formFields{border:0;padding:0;margin:0;min-width:0}.printSheet{max-width:180mm}.noPrint{display:block}@media print{@page{size:A4;margin:14mm}body{background:white!important;font-size:11pt}body aside,body nav,body footer,body header[class*="topline"],body a[class*="skipLink"]{display:none!important}body div[class*="shell"],body div[class*="workspace"]{display:block!important}body main{padding:0!important}.printSheet{max-width:none}.printSheet h1{font-size:24pt}.printSheet h2{font-size:13pt}.printSheet p{margin:7px 0}.printSheet section{padding:10px 0}.noPrint{display:none!important}}

@@ -2,7 +2,7 @@
 
 - Produto novo, local e offline, Windows/PowerShell. Raiz: esta pasta.
 - Não procurar, reutilizar ou migrar o sistema anterior. Regras aprovadas e limites em docs/modulos/.
-- Etapa atual: tarefas1/3 entregues (fundação, modelos, recebimento e estoque de caixas). Não avançar para OP/produção sem novo pedido.
+- Etapa atual: etapa5 (OP inicial, reserva e individualização) implementada; consultar verificação e pendência da base em docs/estado-atual.md. Não avançar para produção detalhada sem novo pedido.
 - Ler `docs/estado-atual.md` primeiro; consultar apenas os documentos do módulo necessário.
 - Brainstorming agora é propositivo: usar `docs/proposta-fluxo-operacional.md`, separar confirmado/proposto/pendente e agrupar somente dúvidas de negócio relevantes ao final. Não repetir perguntas resolvidas nem bloquear em escolhas técnicas reversíveis.
 - Usar Superpowers sob demanda: brainstorming → plano → implementação autorizada → testes e revisão.

@@ -9,7 +9,7 @@ export const color = (v: string | null) => v ?? 'Não aplicável';
 export const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 export const civil = (v: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'UTC' }).format(new Date(v + 'T00:00:00Z'));
 export const num = (v: number) => new Intl.NumberFormat('pt-BR').format(v);
-export const kind = { receipt: 'Entrada', adjustment: 'Ajuste', reversal: 'Estorno' };
+export const kind = { receipt: 'Entrada', adjustment: 'Ajuste', reversal: 'Estorno', conversion: 'Individualização' };
 export function ErrorNotice({ error }: {
     error: Error | null;
 }) { const ref = useRef<HTMLParagraphElement>(null); useEffect(() => { if (error)
@@ -76,7 +76,7 @@ export function Modal({ title, description, close, children, busy = false }: {
     <Dialog.Content className={s.dialog} onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => { if (busy)
         e.preventDefault(); }}>
     <Dialog.Title>{title}</Dialog.Title>
-    <Dialog.Description>{description}</Dialog.Description>{children}<button className={s.secondary} disabled={busy} onClick={close}>Fechar</button>
+    <Dialog.Description>{description}</Dialog.Description>{children}<button type="button" className={s.secondary} disabled={busy} onClick={close}>Fechar</button>
     </Dialog.Content>
     </Dialog.Portal>
     </Dialog.Root>;

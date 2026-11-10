@@ -38,7 +38,7 @@ export class DatabaseStore {
     if (!regularFile(paths.manifest) || !regularFile(paths.database)) throw new BackupError('Cópia não encontrada.');
     try {
       const item = JSON.parse(readFileSync(paths.manifest, 'utf8')) as Manifest;
-      if (item.id !== id || ![1, SCHEMA_VERSION].includes(item.schemaVersion) || !Number.isSafeInteger(item.sizeBytes) || item.sizeBytes <= 0 || !Number.isFinite(Date.parse(item.createdAt)) || !/^[0-9a-f]{64}$/.test(item.sha256)) throw new Error();
+      if (item.id !== id || !Array.from({length:SCHEMA_VERSION},(_,i)=>i+1).includes(item.schemaVersion) || !Number.isSafeInteger(item.sizeBytes) || item.sizeBytes <= 0 || !Number.isFinite(Date.parse(item.createdAt)) || !/^[0-9a-f]{64}$/.test(item.sha256)) throw new Error();
       return item;
     } catch { throw new BackupError('Manifesto de cópia incompatível.'); }
   }

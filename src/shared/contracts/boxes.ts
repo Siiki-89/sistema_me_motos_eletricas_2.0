@@ -11,12 +11,14 @@ export interface MovementDto {
     id: string;
     originId: string;
     quantity: number;
-    kind: "receipt" | "adjustment" | "reversal";
+    kind: "receipt" | "adjustment" | "reversal" | "conversion";
     effectiveDate: string;
     reason: string | null;
     reversesId: string | null;
     actorId: string;
     createdAt: string;
+    orderId?: string | null;
+    unitId?: string | null;
 }
 export interface OriginDto {
     id: string;
@@ -30,6 +32,9 @@ export interface OriginDto {
     meCode: string;
     color: string | null;
     physical: number;
+    reserved: number;
+    blocked: number;
+    available: number;
 }
 export interface StockDto {
     variantId: string;
@@ -41,11 +46,13 @@ export interface StockDto {
     physical: number;
     reserved: number;
     available: number;
+    blocked: number;
 }
 export interface BoxSummary {
     physical: number;
     reserved: number;
     available: number;
+    blocked: number;
     origins: number;
     variants: number;
 }

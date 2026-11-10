@@ -7,6 +7,13 @@ import { ListQuery, IdParams, type ListRequest } from "../../shared/contracts/ca
 import { ReceiptBody, AdjustmentBody, ReversalBody, type ReceiptRequest, type AdjustmentRequest, type ReversalRequest } from "../../shared/contracts/boxes.js";
 import { sqlPage, filters } from "./queries.js";
 export function registerBoxes(app: FastifyInstance, store: DatabaseStore): void {
+    function balance(physical:number, key?:'variantId'|'originId', id?:string) {
+        const where=key ? ' AND '+key+'=?' : '';
+        const args=id?[id]:[];
+        const count=(table:string)=>(store.db.prepare(`SELECT COUNT(*) n FROM ${table} WHERE status='active'${where}`).get(...args) as {n:number}).n;
+        const reserved=count('reservation'),blocked=count('box_block');
+        return {...quantities(physical,reserved,blocked),blocked};
+    }
     app.post<{
         Body: ReceiptRequest;
     }>("/api/v1/boxes/receipts", { schema: { body: ReceiptBody } }, r => command(store.db, "receipt", r.body, () => {
@@ -33,6 +40,7 @@ export function registerBoxes(app: FastifyInstance, store: DatabaseStore): void 
             id: string;
         };
     }>("/api/v1/boxes/movements/:id/reverse", { schema: { body: ReversalBody, params: IdParams } }, r => command(store.db, "reverse:" + r.params.id, r.body, () => {
+        if(store.db.prepare('SELECT id FROM box_conversion WHERE id=?').get(r.params.id)) fail('CONVERSION_NOT_REVERSIBLE','Conversão vinculada à unidade não admite estorno genérico.');
         const m = row(store.db, "box_movement", r.params.id);
         if (m.kind === "reversal" || store.db.prepare("SELECT id FROM box_movement WHERE reversesId=?").get(m.id))
             fail("ALREADY_REVERSED", "Movimento j\u00E1 estornado ou compensat\u00F3rio.");
@@ -40,7 +48,7 @@ export function registerBoxes(app: FastifyInstance, store: DatabaseStore): void 
             fail("REASON_REQUIRED", "Informe o motivo.", 400);
         return movement(store.db, { ...r.body, originId: m.originId, quantity: -m.quantity }, "reversal", m.id);
     }));
-    const stockSelect = `SELECT v.id variantId,p.id productId,p.meCode,p.commercialName,v.color,(p.active AND v.active) active,COALESCE(b.physical,0) physical FROM variant v JOIN product p ON p.id=v.productId LEFT JOIN (SELECT o.variantId,SUM(m.quantity) physical FROM box_origin o JOIN box_movement m ON m.originId=o.id GROUP BY o.variantId) b ON b.variantId=v.id`;
+    const stockSelect = `SELECT v.id variantId,p.id productId,p.meCode,p.commercialName,v.color,(p.active AND v.active) active,COALESCE(b.physical,0) physical FROM variant v JOIN product p ON p.id=v.productId LEFT JOIN (SELECT o.variantId,SUM(m.quantity) physical FROM box_origin o JOIN box_ledger m ON m.originId=o.id GROUP BY o.variantId) b ON b.variantId=v.id`;
     app.get<{
         Querystring: ListRequest;
     }>("/api/v1/boxes/stock", { schema: { querystring: ListQuery } }, r => {
@@ -54,10 +62,10 @@ export function registerBoxes(app: FastifyInstance, store: DatabaseStore): void 
             active: number;
             physical: number;
         }>(store.db, stockSelect, f.where, f.parameters, "p.meCode,v.colorKey,v.id", q);
-        return { ...result, items: result.items.map(x => ({ ...x, active: !!x.active, ...quantities(x.physical) })) };
+        return { ...result, items: result.items.map(x => ({ ...x, active: !!x.active, ...balance(x.physical, 'variantId', x.variantId) })) };
     });
     app.get("/api/v1/boxes/summary", () => {
-        const physical = (store.db.prepare("SELECT COALESCE(SUM(quantity),0) n FROM box_movement").get() as {
+        const physical = (store.db.prepare("SELECT COALESCE(SUM(quantity),0) n FROM box_ledger").get() as {
             n: number;
         }).n;
         const origins = (store.db.prepare("SELECT COUNT(*) n FROM box_origin").get() as {
@@ -66,23 +74,24 @@ export function registerBoxes(app: FastifyInstance, store: DatabaseStore): void 
         const variants = (store.db.prepare("SELECT COUNT(*) n FROM (" + stockSelect + " WHERE COALESCE(b.physical,0)>0)").get() as {
             n: number;
         }).n;
-        return { ...quantities(physical), origins, variants };
+        return { ...balance(physical), origins, variants };
     });
     app.get<{
         Querystring: ListRequest;
     }>("/api/v1/boxes/origins", { schema: { querystring: ListQuery } }, r => {
         const q = r.query, f = filters(q, ["o.meCode", "o.color", "o.supplier", "o.invoice", "o.lot"], [{ column: "o.variantId", value: q.variantId }, { column: "o.id", value: q.originId }]);
-        return sqlPage(store.db, "SELECT o.*,COALESCE((SELECT SUM(m.quantity) FROM box_movement m WHERE m.originId=o.id),0) physical FROM box_origin o", f.where, f.parameters, "o.receivedDate DESC,o.id", q);
+        const result = sqlPage<{id:string;physical:number}>(store.db, "SELECT o.*,COALESCE((SELECT SUM(m.quantity) FROM box_ledger m WHERE m.originId=o.id),0) physical FROM box_origin o", f.where, f.parameters, "o.receivedDate DESC,o.id", q);
+        return {...result,items:result.items.map(x=>({...x,...balance(x.physical,'originId',x.id)}))};
     });
     app.get<{
         Params: {
             id: string;
         };
-    }>("/api/v1/boxes/origins/:id", { schema: { params: IdParams } }, r => ({ ...row(store.db, "box_origin", r.params.id), physical: originBalance(store.db, r.params.id) }));
+    }>("/api/v1/boxes/origins/:id", { schema: { params: IdParams } }, r => ({ ...row(store.db, "box_origin", r.params.id), ...balance(originBalance(store.db, r.params.id),'originId',r.params.id) }));
     app.get<{
         Querystring: ListRequest;
     }>("/api/v1/boxes/movements", { schema: { querystring: ListQuery } }, r => {
         const q = r.query, f = filters(q, ["o.meCode", "o.color", "m.reason"], [{ column: "m.originId", value: q.originId }, { column: "o.variantId", value: q.variantId }]);
-        return sqlPage(store.db, "SELECT m.*,o.meCode,o.color FROM box_movement m JOIN box_origin o ON o.id=m.originId", f.where, f.parameters, "m.createdAt DESC,m.id", q);
+        return sqlPage(store.db, "SELECT m.*,o.meCode,o.color FROM box_ledger m JOIN box_origin o ON o.id=m.originId", f.where, f.parameters, "m.createdAt DESC,m.id", q);
     });
 }
