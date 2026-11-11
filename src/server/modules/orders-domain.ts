@@ -8,7 +8,7 @@ export function order(db:SqliteDatabase,id:string):OrderDto {
   return db.prepare('SELECT * FROM production_order WHERE id=?').get(id) as OrderDto | undefined ?? fail('NOT_FOUND','OP não encontrada.',404);
 }
 export function unit(db:SqliteDatabase,id:string):UnitDto {
-  return db.prepare('SELECT * FROM unit WHERE id=?').get(id) as UnitDto | undefined ?? fail('NOT_FOUND','Unidade não encontrada.',404);
+  return db.prepare('SELECT u.*,COALESCE(p.productionStatus,u.productionStatus) productionStatus FROM unit u LEFT JOIN production_record p ON p.unitId=u.id WHERE u.id=?').get(id) as UnitDto | undefined ?? fail('NOT_FOUND','Unidade não encontrada.',404);
 }
 export function reservation(db:SqliteDatabase,id:string):ReservationDto {
   return db.prepare('SELECT * FROM reservation WHERE orderId=?').get(id) as ReservationDto | undefined ?? fail('RESERVATION_REQUIRED','Reserva não encontrada.');

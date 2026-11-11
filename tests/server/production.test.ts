@@ -1,0 +1,42 @@
+import {it,expect} from 'vitest';
+import {buildApp} from '../../src/server/app.js';
+import {mkdirSync,mkdtempSync} from 'node:fs';
+import {join} from 'node:path';
+import {randomUUID} from 'node:crypto';
+it('persists production, enforces completion and correction, preserves unit and stock',async()=>{
+ mkdirSync('artifacts/test-tmp',{recursive:true});const dataDir=mkdtempSync(join(process.cwd(),'artifacts/test-tmp/production-'));
+ let app=buildApp({dataDir,port:4317,mode:'test'});
+ const host={host:'127.0.0.1:4317'};
+ const session=(await app.inject({url:'/api/v1/session',headers:host}));
+ const headers={...host,origin:'http://127.0.0.1:4317',cookie:String(session.headers['set-cookie']).split(';')[0]!,'x-csrf-token':session.json().csrfToken};
+ const cmd=()=>({operationId:randomUUID(),actorId:'local-operator'});
+ const post=(url:string,payload:object)=>app.inject({method:'POST',url,headers,payload});
+ const put=(url:string,payload:object)=>app.inject({method:'PUT',url,headers,payload});
+ const get=(url:string)=>app.inject({url,headers:host});
+ try{
+ const p=(await post('/api/v1/catalog/products',{...cmd(),meCode:'SYN-PROD'})).json();
+ const v=(await post('/api/v1/catalog/variants',{...cmd(),productId:p.id,color:null})).json();
+ await post('/api/v1/boxes/receipts',{...cmd(),variantId:v.id,quantity:2,receivedDate:'2026-11-10'});
+ const order=(await post('/api/v1/orders',{...cmd(),variantId:v.id,orderDate:'2026-11-10'})).json();
+ const url=`/api/v1/orders/${order.id}/production`;
+ expect((await get(url)).statusCode).toBe(409);
+ const conversion=(await post(`/api/v1/orders/${order.id}/convert`,{...cmd(),version:1})).json();
+ const initial=await get(url);expect(initial.statusCode).toBe(200);expect(initial.json()).toMatchObject({version:0,productionStatus:'WAITING',stages:[]});
+ const stage={id:randomUUID(),kind:'ASSEMBLY',state:'IN_PROGRESS',civilDate:null,startAt:'2026-11-10T23:00',endAt:'2026-11-11T01:00',responsible:'Pessoa sintética',notes:null,occurrenceId:null,pauses:[{id:randomUUID(),startAt:'2026-11-10T23:30',endAt:'2026-11-11T00:00',reason:'BREAK',notes:null}]};
+ const selfCheck={templateVersion:1,answers:Array.from({length:8},(_,i)=>({code:`2.${i+1}`,state:'CONFORMING',notes:null}))};
+ const payload={...cmd(),version:0,stages:[stage],occurrences:[],selfCheck};
+ const saved=await put(url,payload);expect(saved.statusCode).toBe(200);expect(saved.json()).toMatchObject({version:1,productionStatus:'ASSEMBLING',totals:{netMinutes:90}});
+ expect((await put(url,payload)).json()).toEqual(saved.json());
+ expect((await put(url,{...payload,...cmd()})).json().error.code).toBe('VERSION_CONFLICT');
+ expect((await put(url,{...payload,...cmd(),version:1,stages:[]})).json().error.code).toBe('PERSISTED_ROW_OMITTED');
+ expect((await put(url,{...payload,...cmd(),version:1,stages:[{...stage,endAt:'2026-11-10T23:40'}]})).statusCode).toBe(400);
+ expect((await get(url)).json().version).toBe(1);
+ const complete=await post(`${url}/stages/${stage.id}/complete`,{...cmd(),version:1});expect(complete.statusCode).toBe(200);expect(complete.json().productionStatus).toBe('ASSEMBLED');
+ expect((await get(`/api/v1/units/${conversion.unit.id}`)).json()).toMatchObject({productionStatus:'ASSEMBLED',qualityStatus:'PENDING'});
+ expect((await get('/api/v1/units')).json().items[0].productionStatus).toBe('ASSEMBLED');
+ expect((await put(url,{...payload,...cmd(),version:2})).json().error.code).toBe('STAGE_COMPLETED');
+ expect((await post(`${url}/stages/${stage.id}/reopen`,{...cmd(),version:2,reason:'Correção sintética'})).statusCode).toBe(200);
+ expect((await get('/api/v1/boxes/summary')).json().physical).toBe(1);
+ await app.close();app=buildApp({dataDir,port:4317,mode:'test'});expect((await get(url)).json()).toMatchObject({version:3,productionStatus:'ASSEMBLING',totals:{netMinutes:90}});
+ }finally{await app.close();}
+});

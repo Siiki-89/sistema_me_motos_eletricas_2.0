@@ -6,9 +6,10 @@ import assert from 'node:assert/strict';
 import Database from 'better-sqlite3';
 import { runtimePath } from './runtime.mjs';
 import { testOrders } from './browser-orders.mjs';
+import { testProduction } from './browser-production.mjs';
 
 const scenario = process.argv[2];
-if (!['shell', 'backup', 'receipt', 'orders'].includes(scenario)) throw new Error('Cenário obrigatório: shell, backup, receipt ou orders.');
+if (!['shell', 'backup', 'receipt', 'orders', 'production'].includes(scenario)) throw new Error('Cenário obrigatório: shell, backup, receipt, orders ou production.');
 mkdirSync('artifacts/browser', { recursive: true });
 const evidence = mkdtempSync(resolve('artifacts/browser', `${scenario}-`));
 const dataDir = join(evidence, 'data');
@@ -105,6 +106,7 @@ try {
     link('Proteção dos dados');
   }
   if (scenario === 'orders') await testOrders({browser,evaluate,evidence,base,dataDir});
+  if (scenario === 'production') await testProduction({browser,evaluate,evidence,base,dataDir});
   if (scenario === 'backup') {
     browser('find','role','button','click','--name','Criar cópia agora','--exact');
     browser('wait','--text','Cópia criada com sucesso.');

@@ -45,14 +45,14 @@ it("upgrades v1 with validated recoverable backup and restores either supported 
     old.close();
     const store = new DatabaseStore(dir);
     try {
-        expect(store.db.prepare("SELECT COUNT(*) n FROM schema_migration").get()).toEqual({ n: 3 });
+        expect(store.db.prepare("SELECT COUNT(*) n FROM schema_migration").get()).toEqual({ n: 4 });
         const v1 = store.list()[0]!;
         expect(store.validate(v1.id).schemaVersion).toBe(1);
         const v2 = await store.create();
-        expect(v2.schemaVersion).toBe(3);
+        expect(v2.schemaVersion).toBe(4);
         await store.restore(v1.id);
         expect(store.db.prepare("SELECT value FROM app_metadata WHERE key='synthetic'").get()).toEqual({ value: "preserved" });
-        expect(store.db.prepare("SELECT COUNT(*) n FROM schema_migration").get()).toEqual({ n: 3 });
+        expect(store.db.prepare("SELECT COUNT(*) n FROM schema_migration").get()).toEqual({ n: 4 });
         await store.restore(v2.id);
         expect(store.db.pragma("integrity_check", { simple: true })).toBe("ok");
     }

@@ -27,7 +27,7 @@ export interface OrderDto {
 }
 export interface ReservationDto {id:string;orderId:string;originId:string;variantId:string;status:'active'|'consumed'|'released';createdAt:string;updatedAt:string}
 export interface OrderListDto extends OrderDto {chassis:string|null}
-export interface UnitDto {id:string;variantId:string;meCode:string;commercialName:string|null;color:string|null;chassis:string|null;chassisOriginal:string|null;originId:string;originOrderId:string;createdAt:string;productionStatus:'WAITING';qualityStatus:'PENDING';location:'GALPAO'}
+export interface UnitDto {id:string;variantId:string;meCode:string;commercialName:string|null;color:string|null;chassis:string|null;chassisOriginal:string|null;originId:string;originOrderId:string;createdAt:string;productionStatus:'WAITING'|'UNPACKING'|'ASSEMBLING'|'PAUSED'|'ASSEMBLED';qualityStatus:'PENDING';location:'GALPAO'}
 export interface OrderEventDto {id:string;orderId:string;kind:string;actorId:string;reason:string|null;data:string;createdAt:string}
 export interface OrderDetailDto extends OrderDto {reservation:ReservationDto;unit:UnitDto|null;history:OrderEventDto[]}
 export interface ConversionDto {order:OrderDto;unit:UnitDto}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { NavLink, useSearchParams } from 'react-router-dom';
+import { productionLabels } from '../production/model';
 import { request } from '../../lib/api';
 import type { Page } from '../../../shared/contracts/catalog';
 import type { OrderDto, OrderListDto, BlockDto, UnitDto } from '../../../shared/contracts/orders';
@@ -174,7 +175,7 @@ export function Units() {
     </Field>
     <QueryState query={query} empty="Nenhuma unidade encontrada."/>{query.data?.items.map(u => <div className={s.origin} key={u.id}>
         <NavLink to={`/unidades/${u.id}`}>{u.meCode} / {color(u.color)} — {u.chassis || 'Chassi pendente'}</NavLink>
-        <p>ID interno: {u.id}</p>
+        <p>ID interno: {u.id}</p><p>Produção: {productionLabels[u.productionStatus] ?? 'Aguardando'} · Qualidade: Pendente · Localização: Galpão</p>
         </div>)}<Pager data={query.data} page={f.page} setPage={v => f.update('page', String(v))} label="unidades"/>
     </>;
 }

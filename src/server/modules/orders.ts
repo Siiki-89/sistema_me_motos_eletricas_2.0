@@ -69,7 +69,7 @@ export function registerOrders(app:FastifyInstance,store:DatabaseStore):void {
   }));
   app.get<{Querystring:OrderListRequest}>('/api/v1/units',{schema:{querystring:OrderListQuery}},r=>{
     const f=filters(r.query,['u.meCode','u.commercialName','u.chassis','o.code'],[{column:'u.originId',value:r.query.originId},{column:'o.status',value:r.query.status}]);
-    return sqlPage<UnitDto>(store.db,'SELECT u.* FROM unit u JOIN production_order o ON o.id=u.originOrderId',f.where,f.parameters,'u.createdAt DESC,u.id',r.query);
+    return sqlPage<UnitDto>(store.db,'SELECT u.*,COALESCE(p.productionStatus,u.productionStatus) productionStatus FROM unit u JOIN production_order o ON o.id=u.originOrderId LEFT JOIN production_record p ON p.unitId=u.id',f.where,f.parameters,'u.createdAt DESC,u.id',r.query);
   });
   app.get<{Params:Params}>('/api/v1/units/:id',{schema:{params:IdParams}},r=>{
     const u=unit(store.db,r.params.id);return {...u,orders:store.db.prepare('SELECT * FROM production_order WHERE unitId=? ORDER BY createdAt,id').all(u.id),history:history(store.db,u.originOrderId)};

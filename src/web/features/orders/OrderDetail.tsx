@@ -5,6 +5,7 @@ import { request } from '../../lib/api';
 import type { OrderDetailDto, OrderDto, ConversionDto, UnitDetailDto, UnitDto, OrderEventDto } from '../../../shared/contracts/orders';
 import type { OriginDto } from '../../../shared/contracts/boxes';
 import { Header, Field, ErrorNotice, Modal, useWriteOperation, civil, today, color, useUnsavedChanges } from '../common/Operational';
+import { productionLabels } from '../production/model';
 import { OrderFields, emptyFields, statuses } from './Orders';
 import s from '../../app/Operations.module.css';
 const printText = (value:string|null) => value ? (value.length > 120 ? value.slice(0,120) + '… (texto completo na OP)' : value) : '________________________________';
@@ -51,7 +52,7 @@ export function UnitInfo({ unit }: {
     <dt>Individualização</dt>
     <dd>{new Date(unit.createdAt).toLocaleString('pt-BR')}</dd>
     <dt>Produção</dt>
-    <dd>Aguardando</dd>
+    <dd>{productionLabels[unit.productionStatus] ?? 'Aguardando'}</dd>
     <dt>Qualidade</dt>
     <dd>Pendente</dd>
     <dt>Localização</dt>
@@ -136,7 +137,7 @@ function OrderContent({ order: o, print, onSaved }: {
         </> : <>
         <div className={s.toolbar}>
         <NavLink to="/ordens">Voltar às OPs</NavLink>
-        <NavLink to={`/ordens/${o.id}/imprimir`}>Ficha para impressão</NavLink>{o.unitId && <NavLink to={`/unidades/${o.unitId}`}>Abrir unidade</NavLink>}</div>
+        <NavLink to={`/ordens/${o.id}/producao`}>Produção</NavLink><NavLink to={`/ordens/${o.id}/imprimir`}>Ficha para impressão</NavLink>{o.unitId && <NavLink to={`/unidades/${o.unitId}`}>Abrir unidade</NavLink>}</div>
         <h2>{o.unit ? 'Transcrição' : 'Primeira transcrição'}</h2>
         <p>{o.unit ? 'Salvar alterações preserva a unidade e não baixa outra caixa.' : 'Pode salvar dados parciais. O chassi e os responsáveis podem permanecer pendentes.'}</p>
         <form onSubmit={e => { e.preventDefault(); if (o.unit)

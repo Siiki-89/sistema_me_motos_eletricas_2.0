@@ -1,10 +1,13 @@
 param(
     [ValidateRange(1,65535)][int]$Port = 4317,
-    [string]$DataDirectory = (Join-Path $env:LOCALAPPDATA 'ME-Estoque/data'),
+    [string]$DataDirectory,
     [switch]$NoBrowser
 )
 $ErrorActionPreference = 'Stop'
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+if ([string]::IsNullOrWhiteSpace($DataDirectory)) {
+    throw 'Informe -DataDirectory com a pasta absoluta de dados verificada. Nenhuma base padrão foi aberta ou criada.'
+}
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $node = Join-Path $projectRoot 'tools/runtime/node-v24.22.2-win-x64/node.exe'
 $entry = Join-Path $projectRoot 'dist/server/main.js'

@@ -319,3 +319,9 @@ Implementado o recorte autorizado das tarefas4/5 e proteções mínimas da6. Có
 Os checklists originais4/5 descrevem escopo/testes mais amplos e não são marcados integralmente: este registro é o estado efetivamente entregue. Não afirmar rollback injetado em cada instrução: houve falha intermediária transacional e verificações de invariantes, além de disputa real entre processos.
 
 Rulings: FIFO é origem contábil, não caixa física identificada; responsáveis opcionais textuais serão normalizados futuramente se necessário; mesmo branch/raiz autorizados, sem worktree duplicado; estados administrativos não avançam montagem/qualidade. Custo se revistos: ajuste de regra/UX e eventual migration incremental, preservando histórico.
+
+## Registro da etapa6 — 11/11/2026
+
+Entregue o recorte da tarefa7: transcrição parcial de desembalagem/montagem, pausas, cálculo civil, ocorrências, autoconferência8 itens, conclusão/reabertura e retrabalho na mesma OP. Migration004-production.sql aditiva; nomes/estrutura do código seguem o incremento real, não os nomes especulativos do plano original. Tarefa6 (nova OP/estorno) e9 (qualidade) não foram implementadas integralmente.
+
+Build,98 testes e Agent Browser produção/OP/backup aprovados; evidências e limites em docs/verificacao-producao.md. Diagnóstico operacional classificação3 em docs/diagnostico-banco-operacional.md; não recuperado nem reconstruído. Nenhuma ativação real. Próximo passo: avaliar entrega e resolver dados operacionais antes de uso real; aguardar novo pedido para outra etapa.

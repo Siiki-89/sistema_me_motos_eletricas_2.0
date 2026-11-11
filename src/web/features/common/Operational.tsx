@@ -109,18 +109,18 @@ export function useListFilters() { const [params, setParams] = useSearchParams()
 else
     next.delete(key); if (key !== 'page')
     next.delete('page'); return next; }, { replace: true }); } return { q, active, page, setQ: (v: string) => update('q', v), setActive: (v: string) => update('active', v), setPage: (v: number) => update('page', v === 1 ? '' : String(v)) }; }
-export function useUnsavedChanges(enabled: boolean) {
+export function useUnsavedChanges(enabled: boolean, message = 'Sair desta tela? Dados ainda não confirmados serão descartados.') {
     useEffect(() => {
         if (!enabled)
             return;
         const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
         const navigate = (event: MouseEvent) => { if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
-            return; const anchor = (event.target as Element)?.closest?.('a'); if (anchor && anchor.target !== '_blank' && anchor.getAttribute('href')?.startsWith('/') && !window.confirm('Sair desta tela? Dados ainda não confirmados serão descartados.')) {
+            return; const anchor = (event.target as Element)?.closest?.('a'); if (anchor && anchor.target !== '_blank' && anchor.getAttribute('href')?.startsWith('/') && !window.confirm(message)) {
             event.preventDefault();
             event.stopPropagation();
         } };
         window.addEventListener('beforeunload', unload);
         document.addEventListener('click', navigate, true);
         return () => { window.removeEventListener('beforeunload', unload); document.removeEventListener('click', navigate, true); };
-    }, [enabled]);
+    }, [enabled, message]);
 }

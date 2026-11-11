@@ -1,15 +1,15 @@
-> **Etapa5:** OPs e unidades implementadas, além de modelos/caixas. Consulte [regras](modulos/op-unidades.md) e [verificação](verificacao-op-unidades.md). Ativação com dados reais pendente: leia [estado atual](estado-atual.md); não iniciar base vazia como substituta da anterior.
+> **Etapa6:** produção e tempos implementados, além de modelos/caixas/OPs/unidades. Consulte [regras](modulos/producao-tempos.md) e [verificação](verificacao-producao.md). Ativação com dados reais pendente: leia [estado atual](estado-atual.md); não iniciar base vazia como substituta da anterior.
 
 # Fundação local — iniciar e proteger os dados
 
-Entrega de OP e individualização, 10/11/2026. Interface, conexão local, estoque, OP, chassi e cópias/restauração. Produção detalhada, qualidade e expedição ainda não implementadas. Este checkout está preparado neste computador; ainda não é instalador de distribuição.
+Entrega de produção e tempos, 11/11/2026. Interface, conexão local, estoque, OP, chassi, montagem e cópias/restauração. Qualidade final e expedição ainda não implementadas. Este checkout está preparado neste computador; ainda não é instalador de distribuição.
 
 ## Iniciar no Windows
 
 Abra PowerShell 7 na pasta `C:\Users\Alexandre de Melo\Desktop\me`:
 
 ```powershell
-.\scripts\start.ps1
+.\scripts\start.ps1 -DataDirectory 'C:\caminho\da\pasta-verificada'
 ```
 
 O inicializador abre `http://127.0.0.1:4317` no navegador. O processo Node fica oculto; outra chamada reutiliza somente a instância registrada desta pasta de dados. Porta ocupada por outro programa causa erro, sem encerrar esse programa. Não é necessário internet, Codex, npm ou terminal aberto durante a operação. A instalação do projeto e seu runtime local precisam permanecer no disco.
@@ -17,18 +17,18 @@ O inicializador abre `http://127.0.0.1:4317` no navegador. O processo Node fica 
 Para encerrar com fechamento da conexão SQLite:
 
 ```powershell
-.\scripts\stop.ps1
+.\scripts\stop.ps1 -DataDirectory 'C:\caminho\da\pasta-verificada'
 ```
 
 O encerramento identifica a instância, obtém sessão local e chama o endpoint protegido. Não força encerramento se a aplicação estiver em manutenção ou não corresponder ao processo esperado. Não foi instalado serviço Windows ou inicialização automática. Nenhuma política global de execução PowerShell foi alterada; se o Windows bloquear scripts, usar a política aprovada pelo administrador, sem desabilitar proteção global.
 
 ## Armazenamento
 
-Padrão: `%LOCALAPPDATA%\ME-Estoque\data\me-estoque.sqlite`, normalmente `C:\Users\Alexandre de Melo\AppData\Local\ME-Estoque\data\me-estoque.sqlite`. Criado no primeiro início normal. A entrega foi testada somente com bancos sintéticos separados em `artifacts/`; não usa a planilha nem banco anterior.
+Não há pasta padrão para inicializar. Substitua o exemplo acima por uma pasta absoluta previamente verificada. O backend exige `ME_DATA_DIR`, fornecido pelo inicializador. A pasta histórica `%LOCALAPPDATA%\ME-Estoque\data` não deve ser assumida como correta: a investigação encontrou uma base vazia e não recuperou o banco de224 caixas. A entrega foi testada somente com bancos sintéticos separados em `artifacts/`; não usa a planilha nem banco anterior. Informar uma pasta vazia explicitamente cria uma nova base; isso não recupera lançamentos anteriores.
 
 Na pasta de dados: `backups/` guarda cópias gerenciadas; `logs/` guarda saída do processo; `runtime-instance.json` identifica inicialização. SQLite pode manter arquivos `-wal` e `-shm`. Não copie/mova apenas o banco aberto nem remova esses arquivos para “corrigir” o programa.
 
-Opcionalmente, o inicializador aceita `-DataDirectory 'C:\caminho\local' -Port 4318 -NoBrowser`; informe pasta absoluta local e use a mesma pasta ao parar. Não selecionar diretório sincronizado ou compartilhamento de rede. O aplicativo rejeita paths relativos/UNC, mas não detecta todo software de sincronização instalado.
+`-DataDirectory` é obrigatório. Opcionalmente use `-Port 4318 -NoBrowser`; use a mesma pasta ao parar. Não selecionar diretório sincronizado ou compartilhamento de rede. O aplicativo rejeita paths relativos/UNC, mas não detecta todo software de sincronização instalado.
 
 ## Backup e restauração disponíveis
 
@@ -77,7 +77,7 @@ API acessível somente por loopback, com validação Host/Origin, cookie HttpOnl
 
 Ao perder uma resposta, repita a mesma confirmação: a chave da tentativa evita duplicação. Só inicie outra operação depois de conferir o histórico. Não recarregue nem feche o navegador com uma tentativa incerta sem antes conferir seu resultado. O rascunho não é persistente.
 
-Após atualizar: confirmar pasta/saldos da base correta, encerrar instância antiga, executar build e iniciar com a mesma pasta explícita. Ao abrir banco1/2, versão3 cria cópia consistente validada antes das migrations pendentes; mantém001/002. Proteção dos dados aceita backups1/2/3. Não executar programa antigo sobre banco3.
+Após autorização para atualizar uma base operacional: confirmar pasta/saldos corretos, encerrar instância antiga, executar build e iniciar com a mesma pasta explícita. Ao abrir banco1/2/3, versão4 cria cópia consistente validada antes das migrations pendentes; mantém001–003. Proteção dos dados aceita backups1–4. Não executar programa antigo sobre banco4. Neste incremento, atualizações/restaurações foram feitas exclusivamente em bases sintéticas.
 
 Para a jornada isolada adicional: scripts/npm.ps1 run test:browser receipt. Nenhum cenário recebe dados reais.
 
@@ -88,3 +88,17 @@ Para a jornada isolada adicional: scripts/npm.ps1 run test:browser receipt. Nenh
 Salvar mudanças antes de concluir registro administrativo. Cancelamento exige motivo e, antes da conversão, condição física da caixa. Aberta fica bloqueada: lista de OPs oferece regularização ou liberação confirmando caixa fechada. Após conversão, cancelar não devolve caixa. Estes comandos não aprovam produção ou qualidade.
 
 Jornada isolada: `scripts/npm.ps1 run test:browser orders`. Sessão própria e base sintética; sem domínios externos. Rascunhos não persistem ao fechar/recarregar. Resolver resultado incerto e consultar histórico antes de outra intenção.
+
+## Transcrever produção
+
+1. Abra uma OP individualizada e clique **Produção**. Adicione desembalagem e montagem conforme a ficha; informe datas completas ao atravessar meia-noite. **Salvar produção** permite dados incompletos, sem concluir a etapa.
+2. Registre pausas com motivo e intervalos. Total incompleto aparece pendente; subtotal conhecido é separado. Preencher o término não equivale a conclusão.
+3. Registre ocorrências, componente, problema, horário e destino previsto. Resolver exige ação realizada. Não movimenta estoque de peças.
+4. Preencha os8 itens de autoconferência. Montagem só conclui com dados completos, responsável, pausas válidas, itens avaliados sem não conformidade e ocorrências resolvidas. Não aplicável exige justificativa. **Concluir Montagem** não aprova qualidade final.
+5. Para corrigir etapa concluída, use **Reabrir** com motivo. Retrabalhos registram execuções adicionais na mesma OP sem nova unidade ou baixa. Uma ocorrência já resolvida pode ser incluída após conclusão; pendências exigem reabertura.
+
+O editor de produção preserva rascunho e tentativa exata no armazenamento da própria aba. Ao voltar/recarregar, exibe aviso de recuperação. Uma tentativa incerta deve ser repetida explicitamente; não é reenviada automaticamente. Não fechar a aba antes de resolver a tentativa: sessionStorage não é backup e pode desaparecer ao fechar a aba/navegador. Se estiver indisponível, a tela avisa. Esta recuperação não se aplica aos demais formulários antigos.
+
+Linhas novas podem ser removidas antes de salvar. Registros já persistidos não são apagados nesta entrega; correções de horários/observações geram histórico. Anulação auditada será uma evolução própria. Histórico mostra alterações antes/depois.
+
+Teste isolado adicional: `scripts/npm.ps1 run test:browser production`. Consulte a verificação para cálculos, evidências e limites.
