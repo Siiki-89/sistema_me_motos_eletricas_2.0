@@ -50,6 +50,7 @@ export function registerQuality(app:FastifyInstance,store:DatabaseStore){
  app.put<{Params:{id:string};Body:QualitySaveRequest}>(root,{schema:{params:IdParams,body:QualitySaveBody}},r=>command(store.db,'quality.save:'+r.params.id,r.body,()=>{
    const db=store.db,o=order(db,r.params.id),b=r.body,before=read(db,o.id);
    if(o.status==='CANCELLED')fail('ORDER_CANCELLED','OP cancelada.',409);
+   if(db.prepare('SELECT id FROM shipment WHERE unitId=?').get(o.unitId))fail('ALREADY_SHIPPED','Inspeção de moto expedida não pode ser alterada.',409);
    requireVersion(before,b.version);
    if(before.status!=='DRAFT')fail('QUALITY_LOCKED','Reabra a inspeção para alterá-la.',409);
    validate(b.staticAnswers,qualityStaticItems);validate(b.roadAnswers,qualityRoadItems);
@@ -62,6 +63,7 @@ export function registerQuality(app:FastifyInstance,store:DatabaseStore){
  for(const action of ['approve','reject','reopen'] as const) app.post<{Params:{id:string};Body:QualityDecisionRequest}>(`${root}/${action}`,{schema:{params:IdParams,body:QualityDecisionBody}},r=>command(store.db,'quality.'+action+':'+r.params.id,r.body,()=>{
    const db=store.db,o=order(db,r.params.id),before=read(db,o.id),b=r.body;
    if(o.status==='CANCELLED')fail('ORDER_CANCELLED','OP cancelada.',409);
+   if(db.prepare('SELECT id FROM shipment WHERE unitId=?').get(o.unitId))fail('ALREADY_SHIPPED','Inspeção de moto expedida não pode ser alterada.',409);
    requireVersion(before,b.version);const existing=row(db,o.id);
    if(!existing)fail('QUALITY_EMPTY','Preencha a inspeção antes de decidir.',409);
    if(action==='reopen'){

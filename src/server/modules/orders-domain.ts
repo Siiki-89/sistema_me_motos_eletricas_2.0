@@ -8,7 +8,14 @@ export function order(db:SqliteDatabase,id:string):OrderDto {
   return db.prepare('SELECT * FROM production_order WHERE id=?').get(id) as OrderDto | undefined ?? fail('NOT_FOUND','OP não encontrada.',404);
 }
 export function unit(db:SqliteDatabase,id:string):UnitDto {
-  return db.prepare('SELECT u.*,COALESCE(p.productionStatus,u.productionStatus) productionStatus FROM unit u LEFT JOIN production_record p ON p.unitId=u.id WHERE u.id=?').get(id) as UnitDto | undefined ?? fail('NOT_FOUND','Unidade não encontrada.',404);
+  return db.prepare('SELECT u.id,u.variantId,u.meCode,u.commercialName,u.color,u.chassis,u.chassisOriginal,u.originId,u.originOrderId,u.createdAt,
+  COALESCE(p.productionStatus,u.productionStatus) productionStatus,
+  CASE WHEN q.status='APPROVED' AND q.productionVersion=p.version AND p.productionStatus='ASSEMBLED' THEN 'APPROVED'
+       WHEN q.status='REJECTED' AND q.productionVersion=p.version THEN 'REJECTED' ELSE 'PENDING' END qualityStatus,
+  CASE WHEN sh.status='SHIPPED' THEN 'TRANSPORTE'
+       WHEN sh.status IN('RECEIVED','RECEIVED_WITH_REMARKS') THEN 'LOJA' ELSE u.location END location
+  FROM unit u LEFT JOIN production_record p ON p.unitId=u.id
+  LEFT JOIN quality_record q ON q.unitId=u.id LEFT JOIN shipment sh ON sh.unitId=u.id WHERE u.id=?').get(id) as UnitDto | undefined ?? fail('NOT_FOUND','Unidade não encontrada.',404);
 }
 export function reservation(db:SqliteDatabase,id:string):ReservationDto {
   return db.prepare('SELECT * FROM reservation WHERE orderId=?').get(id) as ReservationDto | undefined ?? fail('RESERVATION_REQUIRED','Reserva não encontrada.');
@@ -57,9 +64,17 @@ export function editFields(db:SqliteDatabase,o:OrderDto,b:OrderUpdateRequest):vo
     if(!o.unitId) fail('CONVERSION_REQUIRED','Inicie a transcrição antes de informar o chassi.');
     const u=unit(db,o.unitId!),chassis=clean(b.chassis)?.toUpperCase()??null;
     if(u.chassis!==chassis) {
+      if(db.prepare('SELECT id FROM shipment WHERE unitId=?').get(u.id)) fail('ALREADY_SHIPPED','Unidade expedida não pode ter chassi alterado nesta OP.');
       if(u.chassis&&!b.reason?.trim()) fail('REASON_REQUIRED','Informe o motivo da correção do chassi.',400);
       if(chassis&&db.prepare('SELECT id FROM unit WHERE chassis=? COLLATE NOCASE AND id<>?').get(chassis,u.id)) fail('CHASSIS_CONFLICT','Chassi já registrado em outra unidade.');
       db.prepare('UPDATE unit SET chassis=?,chassisOriginal=? WHERE id=?').run(chassis,clean(b.chassis),u.id);
+      // A different chassis invalidates any previous quality decision, retaining the inspection history.
+      const inspections=db.prepare("SELECT orderId,version,status FROM quality_record WHERE unitId=? AND status<>'DRAFT'").all(u.id) as {orderId:string;version:number;status:string}[];
+      for(const inspection of inspections){
+        const now=new Date().toISOString();
+        db.prepare("UPDATE quality_record SET status='DRAFT',version=version+1,updatedAt=? WHERE orderId=?").run(now,inspection.orderId);
+        db.prepare("INSERT INTO quality_event VALUES(?,?,?,?,?,?,?,?)").run(randomUUID(),inspection.orderId,b.actorId,'REOPENED','Chassi corrigido: reinspeção obrigatória',JSON.stringify(inspection),JSON.stringify({status:'DRAFT',version:inspection.version+1,chassis}),now);
+      }
       event(db,o,'CHASSIS_UPDATED',b.actorId,clean(b.reason),{before:u.chassis,after:chassis,beforeOriginal:u.chassisOriginal,afterOriginal:clean(b.chassis)});
     }
   }

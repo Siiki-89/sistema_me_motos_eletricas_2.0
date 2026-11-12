@@ -54,9 +54,9 @@ export function UnitInfo({ unit }: {
     <dt>Produção</dt>
     <dd>{productionLabels[unit.productionStatus] ?? 'Aguardando'}</dd>
     <dt>Qualidade</dt>
-    <dd>Pendente</dd>
+    <dd>{({PENDING:'Pendente',APPROVED:'Aprovada',REJECTED:'Reprovada'} as const)[unit.qualityStatus]}</dd>
     <dt>Localização</dt>
-    <dd>Galpão</dd>
+    <dd>{({GALPAO:'Galpão',TRANSPORTE:'Em transporte',LOJA:'Loja'} as const)[unit.location]}</dd>
     </dl>
     <p>Estes estados são independentes da situação administrativa da OP.</p>
     </section>;
