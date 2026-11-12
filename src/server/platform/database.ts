@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 export const DATABASE_NAME = "me-estoque.sqlite";
 export type SqliteDatabase = Database.Database;
 export function assertLocalDirectory(dir: string): void {
@@ -19,7 +19,7 @@ function migrationRoot(): string {
     }
     throw new Error("Prepara\u00E7\u00E3o n\u00E3o encontrada.");
 }
-const files = ["001-foundation.sql", "002-boxes.sql", "003-orders-units.sql", "004-production.sql"];
+const files = ["001-foundation.sql", "002-boxes.sql", "003-orders-units.sql", "004-production.sql", "005-quality.sql"];
 export function migrationChecksum(dir = migrationRoot(), version = 1): string {
     return createHash("sha256").update(readFileSync(join(dir, files[version - 1]!))).digest("hex");
 }
@@ -37,6 +37,7 @@ export function validateSchema(db: SqliteDatabase, dir = migrationRoot()): numbe
     const present=new Set((db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as {name:string}[]).map(r=>r.name));
     if(rows.length>=3) required.push('production_order','reservation','unit','box_conversion','box_block','order_event','order_sequence');
     if(rows.length>=4) required.push('production_record','production_stage','production_occurrence','production_history');
+    if(rows.length>=5) required.push('quality_record','quality_event');
     if(required.some(name=>!present.has(name)))throw new Error('Estrutura incompatível.');
     return rows.length;
 }

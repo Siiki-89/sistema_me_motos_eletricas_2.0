@@ -1,0 +1,51 @@
+import {it,expect} from 'vitest';
+import {buildApp} from '../../src/server/app.js';
+import {mkdtempSync,mkdirSync} from 'node:fs';
+import {join} from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {qualityStaticItems,qualityRoadItems} from '../../src/shared/contracts/quality.js';
+
+it('quality is explicit, versioned and invalidates after production is reopened',async()=>{
+ mkdirSync('artifacts/test-tmp',{recursive:true});
+ const dataDir=mkdtempSync(join(process.cwd(),'artifacts/test-tmp/quality-'));
+ const app=buildApp({dataDir,port:4317,mode:'test'}),host={host:'127.0.0.1:4317'};
+ const session=await app.inject({url:'/api/v1/session',headers:host});
+ const headers={...host,origin:'http://127.0.0.1:4317',cookie:String(session.headers['set-cookie']).split(';')[0]!,'x-csrf-token':session.json().csrfToken};
+ const cmd=()=>({operationId:randomUUID(),actorId:'local-operator' as const});
+ const post=(url:string,payload:object)=>app.inject({method:'POST',url,headers,payload});
+ const put=(url:string,payload:object)=>app.inject({method:'PUT',url,headers,payload});
+ const get=(url:string)=>app.inject({url,headers:host});
+ try{
+ const p=(await post('/api/v1/catalog/products',{...cmd(),meCode:'QUALITY-SYNTHETIC'})).json();
+ const v=(await post('/api/v1/catalog/variants',{...cmd(),productId:p.id,color:null})).json();
+ expect((await post('/api/v1/boxes/receipts',{...cmd(),variantId:v.id,quantity:1,receivedDate:'2026-11-11'})).statusCode).toBe(201);
+ const o=(await post('/api/v1/orders',{...cmd(),variantId:v.id,orderDate:'2026-11-11'})).json();
+ const converted=await post(`/api/v1/orders/${o.id}/convert`,{...cmd(),version:1,chassis:'QUALITY-CHASSIS'});
+ expect(converted.statusCode).toBe(200);
+ const qurl=`/api/v1/orders/${o.id}/quality`;
+ expect((await get(qurl)).json()).toMatchObject({effectiveStatus:'PENDING',version:0});
+ const answers=(items:readonly {code:string}[])=>items.map(i=>({code:i.code,state:'OK',notes:null}));
+ const body={...cmd(),version:0,checker:'Conferente sintético',notes:null,staticAnswers:answers(qualityStaticItems),roadAnswers:answers(qualityRoadItems)};
+ const saved=await put(qurl,body);
+ expect(saved.statusCode).toBe(200);
+ expect((await put(qurl,body)).json()).toEqual(saved.json());
+ const early=await post(qurl+'/approve',{...cmd(),version:1});
+ expect(early.statusCode).toBe(409);expect(early.json().error.code).toBe('PRODUCTION_INCOMPLETE');
+ const stage={id:randomUUID(),kind:'ASSEMBLY',state:'IN_PROGRESS',civilDate:null,startAt:'2026-11-11T08:00',endAt:'2026-11-11T09:00',responsible:'Mecânico sintético',notes:null,occurrenceId:null,pauses:[]};
+ const selfCheck={templateVersion:1,answers:Array.from({length:8},(_,i)=>({code:`2.${i+1}`,state:'CONFORMING',notes:null}))};
+ expect((await put(`/api/v1/orders/${o.id}/production`,{...cmd(),version:0,stages:[stage],occurrences:[],selfCheck})).statusCode).toBe(200);
+ const comp=await post(`/api/v1/orders/${o.id}/production/stages/${stage.id}/complete`,{...cmd(),version:1});
+ expect(comp.statusCode).toBe(200);
+ const approved=await post(qurl+'/approve',{...cmd(),version:1});
+ expect(approved.statusCode).toBe(200);
+ expect(approved.json().effectiveStatus).toBe('APPROVED');
+ expect((await get(qurl)).json().effectiveStatus).toBe('APPROVED');
+ const reopened=await post(`/api/v1/orders/${o.id}/production/stages/${stage.id}/reopen`,{...cmd(),version:2,reason:'Ajuste necessário'});
+ expect(reopened.statusCode).toBe(200);
+ expect((await get(qurl)).json().effectiveStatus).toBe('PENDING');
+ const recheck=await post(qurl+'/reopen',{...cmd(),version:2,reason:'Reinspecionar após retrabalho'});
+ expect(recheck.statusCode).toBe(200);
+ expect(recheck.json().status).toBe('DRAFT');
+ expect((await get('/api/v1/boxes/summary')).json().physical).toBe(0);
+ }finally{await app.close();}
+});
