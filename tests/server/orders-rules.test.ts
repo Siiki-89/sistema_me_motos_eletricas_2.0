@@ -132,7 +132,7 @@ it('preserves v2 during upgrade and restores v3 orders units receipts and histor
   const o=await f.create(),body={...f.cmd(),version:1,chassis:'SYN-BACKUP'};
   const converted=(await f.post(`/api/v1/orders/${o.id}/convert`,body)).json();
   const before=(await f.get(`/api/v1/orders/${o.id}`)).json();
-  const b=(await f.post('/api/v1/backups',{})).json();expect(b.schemaVersion).toBe(6);
+  const b=(await f.post('/api/v1/backups',{})).json();expect(b.schemaVersion).toBe(7);
   await f.post(`/api/v1/orders/${o.id}/cancel`,{...f.cmd(),version:2,reason:'SYN',effectiveDate:'2026-11-10',boxOpened:false});
   f.db.close();
   expect((await f.post('/api/v1/restore',{backupId:b.id,confirmation:'RESTAURAR'})).statusCode).toBe(200);
