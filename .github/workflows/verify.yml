@@ -1,13 +1,13 @@
-name: Tests ME Estoque
+name: Verificação ME Estoque
 on:
   pull_request:
   push:
     branches: [main, chatgpt/finalizacao-me-estoque]
+permissions:
+  contents: read
 jobs:
-  verify:
+  backend-web:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,5 +17,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx vitest run --project server --project web
-      # Tooling test suite is Windows-specific and requires an installed local runtime.
-      # It remains part of the Windows workstation verification process.
+  windows-local:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar runtime e build local
+        shell: pwsh
+        run: ./scripts/prepare-windows.ps1
+      - name: Testar backend, frontend e inicialização Windows
+        shell: pwsh
+        run: ./scripts/npm.ps1 test

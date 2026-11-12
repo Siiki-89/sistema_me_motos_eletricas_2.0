@@ -46,3 +46,20 @@ Desenvolvimento usa banco separado; testes usam dados sintéticos. Não executar
 - [Requisitos e evidências](docs/requisitos-operacionais.md)
 
 Dados, backups, logs, ferramentas locais e artefatos não são versionados. Não colocar SQLite em pasta de rede/sincronização. Esta entrega é um checkout executável neste computador; instalador de distribuição e módulos restantes pertencem a próximas etapas.
+
+
+## Instalação em outra pasta Windows (sem Codex)
+
+Extraia o ZIP do repositório em uma pasta nova. Abra PowerShell 7 nela e execute:
+
+```powershell
+.\\scripts\\prepare-windows.ps1
+```
+
+O comando baixa o runtime oficial de Node.js, verifica seu SHA-256, instala as dependências e compila o frontend/backend. Requer internet apenas na preparação, não no uso normal. Ele **não importa ou cria bancos operacionais**. Para iniciar sobre um banco já verificado, execute:
+
+```powershell
+.\\scripts\\start.ps1 -DataDirectory 'C:\\CAMINHO-DA-BASE-VERIFICADA'
+```
+
+Somente se esta for uma instalação realmente nova, sem dados anteriores a recuperar, utilize uma vez a opção `-InitializeNewDatabase`. A situação das 224 caixas ainda exige reconciliação separada. Não use uma pasta nova em substituição ao banco perdido.
