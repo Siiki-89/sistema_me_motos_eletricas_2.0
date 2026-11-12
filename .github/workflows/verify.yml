@@ -1,0 +1,29 @@
+name: Verificação ME Estoque
+on:
+  pull_request:
+  push:
+    branches: [main, chatgpt/finalizacao-me-estoque]
+permissions:
+  contents: read
+jobs:
+  backend-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx vitest run --project server --project web
+  windows-local:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar runtime e build local
+        shell: pwsh
+        run: ./scripts/prepare-windows.ps1
+      - name: Testar backend, frontend e inicialização Windows
+        shell: pwsh
+        run: ./scripts/npm.ps1 test

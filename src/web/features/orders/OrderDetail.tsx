@@ -54,9 +54,9 @@ export function UnitInfo({ unit }: {
     <dt>Produção</dt>
     <dd>{productionLabels[unit.productionStatus] ?? 'Aguardando'}</dd>
     <dt>Qualidade</dt>
-    <dd>Pendente</dd>
+    <dd>{({PENDING:'Pendente',APPROVED:'Aprovada',REJECTED:'Reprovada'} as const)[unit.qualityStatus]}</dd>
     <dt>Localização</dt>
-    <dd>Galpão</dd>
+    <dd>{({GALPAO:'Galpão',TRANSPORTE:'Em transporte',LOJA:'Loja'} as const)[unit.location]}</dd>
     </dl>
     <p>Estes estados são independentes da situação administrativa da OP.</p>
     </section>;
@@ -137,7 +137,7 @@ function OrderContent({ order: o, print, onSaved }: {
         </> : <>
         <div className={s.toolbar}>
         <NavLink to="/ordens">Voltar às OPs</NavLink>
-        <NavLink to={`/ordens/${o.id}/producao`}>Produção</NavLink><NavLink to={`/ordens/${o.id}/imprimir`}>Ficha para impressão</NavLink>{o.unitId && <NavLink to={`/unidades/${o.unitId}`}>Abrir unidade</NavLink>}</div>
+        <NavLink to={`/ordens/${o.id}/producao`}>Produção</NavLink><NavLink to={`/ordens/${o.id}/qualidade`}>Qualidade</NavLink><NavLink to={`/ordens/${o.id}/expedir`}>Expedir</NavLink><NavLink to={`/ordens/${o.id}/imprimir`}>Ficha para impressão</NavLink>{o.unitId && <NavLink to={`/unidades/${o.unitId}`}>Abrir unidade</NavLink>}</div>
         <h2>{o.unit ? 'Transcrição' : 'Primeira transcrição'}</h2>
         <p>{o.unit ? 'Salvar alterações preserva a unidade e não baixa outra caixa.' : 'Pode salvar dados parciais. O chassi e os responsáveis podem permanecer pendentes.'}</p>
         <form onSubmit={e => { e.preventDefault(); if (o.unit)

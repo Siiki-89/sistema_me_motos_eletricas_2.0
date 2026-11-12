@@ -2,7 +2,7 @@
 
 Fundação local para gestão de estoque e produção da ME Motos Elétricas. Windows, React/TypeScript, Fastify e SQLite; operação essencial offline.
 
-**Entrega atual (etapa6):** modelos/cores, caixas, OP com reserva e individualização, produção/montagem, pausas, tempos, ocorrências, autoconferência, backup e restauração. Qualidade final, peças e expedição permanecem pendentes.
+**Entrega atual (etapa6):** modelos/cores, caixas, OP com reserva e individualização, produção/montagem, pausas, tempos, ocorrências, autoconferência, backup e restauração. Inspeção de qualidade e expedição/recebimento incorporados na branch de finalização. Peças e melhorias de produção permanecem pendentes.
 
 **Ativação operacional pendente:** o banco anterior de224 caixas não foi localizado. Há somente registros dos lançamentos preservados; não houve reconstrução. Leia o [diagnóstico](docs/diagnostico-banco-operacional.md). Testes e demonstrações utilizam bases sintéticas.
 
@@ -16,7 +16,13 @@ No PowerShell7, na raiz do projeto:
 .\scripts\stop.ps1 -DataDirectory 'C:\caminho\da\pasta-verificada'
 ```
 
-Substitua o caminho de exemplo pela pasta absoluta previamente verificada; não existe fallback para uma base padrão. Abre `http://127.0.0.1:4317`. Runtime Node local já preparado, sem dependência do Codex ou mudança no Node global. Consulte [operação e recuperação](docs/operacao-local.md).
+Substitua o caminho de exemplo pela pasta absoluta previamente verificada; não existe fallback para uma base padrão.
+
+**Primeira utilização em uma pasta realmente nova:** crie explicitamente o banco inicial com:
+```powershell
+.\\scripts\\start.ps1 -DataDirectory 'C:\\ME-Estoque-Dados' -InitializeNewDatabase
+```
+Não use este parâmetro para recuperar caixas antigas ou operar em um banco já existente. Inicializações seguintes usam o comando normal, sem o parâmetro. O sistema recusa bancos ausentes na inicialização normal. Abre `http://127.0.0.1:4317`. Runtime Node local já preparado, sem dependência do Codex ou mudança no Node global. Consulte [operação e recuperação](docs/operacao-local.md).
 
 ## Desenvolvimento e verificação
 
@@ -40,3 +46,20 @@ Desenvolvimento usa banco separado; testes usam dados sintéticos. Não executar
 - [Requisitos e evidências](docs/requisitos-operacionais.md)
 
 Dados, backups, logs, ferramentas locais e artefatos não são versionados. Não colocar SQLite em pasta de rede/sincronização. Esta entrega é um checkout executável neste computador; instalador de distribuição e módulos restantes pertencem a próximas etapas.
+
+
+## Instalação em outra pasta Windows (sem Codex)
+
+Extraia o ZIP do repositório em uma pasta nova. Abra PowerShell 7 nela e execute:
+
+```powershell
+.\\scripts\\prepare-windows.ps1
+```
+
+O comando baixa o runtime oficial de Node.js, verifica seu SHA-256, instala as dependências e compila o frontend/backend. Requer internet apenas na preparação, não no uso normal. Ele **não importa ou cria bancos operacionais**. Para iniciar sobre um banco já verificado, execute:
+
+```powershell
+.\\scripts\\start.ps1 -DataDirectory 'C:\\CAMINHO-DA-BASE-VERIFICADA'
+```
+
+Somente se esta for uma instalação realmente nova, sem dados anteriores a recuperar, utilize uma vez a opção `-InitializeNewDatabase`. A situação das 224 caixas ainda exige reconciliação separada. Não use uma pasta nova em substituição ao banco perdido.

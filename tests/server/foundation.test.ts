@@ -15,7 +15,7 @@ afterEach(() => { for (const dir of dirs.splice(0)) rmSync(dir, { recursive: tru
 describe('SQLite foundation', () => {
   it('persists, migrates once, enables FK and rolls back failed transactions', () => {
     const dir = temp(); let db = openDatabase(dir);
-    expect(db.prepare('SELECT count(*) AS n FROM schema_migration').get()).toEqual({ n: 4 });
+    expect(db.prepare('SELECT count(*) AS n FROM schema_migration').get()).toEqual({ n: 7 });
     db.exec('CREATE TABLE parent(id INTEGER PRIMARY KEY); CREATE TABLE child(parent_id INTEGER REFERENCES parent(id));');
     expect(() => db.prepare('INSERT INTO child VALUES (12)').run()).toThrow();
     expect(() => withTransaction(db, () => { db.prepare('INSERT INTO parent VALUES (1)').run(); throw new Error('interrupt'); })).toThrow('interrupt');
@@ -23,7 +23,7 @@ describe('SQLite foundation', () => {
     db.prepare("INSERT INTO app_metadata(key,value) VALUES ('synthetic','persisted')").run(); db.close();
     db = openDatabase(dir);
     expect(db.prepare("SELECT value FROM app_metadata WHERE key='synthetic'").get()).toEqual({ value: 'persisted' });
-    expect(db.prepare('SELECT count(*) AS n FROM schema_migration').get()).toEqual({ n: 4 }); db.close();
+    expect(db.prepare('SELECT count(*) AS n FROM schema_migration').get()).toEqual({ n: 7 }); db.close();
   });
   it('refuses checksum drift and future schema', () => {
     const db = openDatabase(temp());
@@ -45,7 +45,7 @@ describe('local HTTP foundation', () => {
     try {
       expect((await app.inject({ url: '/api/v1/health', headers: { host: 'evil.test' } })).statusCode).toBe(403);
       const health = await app.inject({ url: '/api/v1/health', headers: host });
-      expect(health.json()).toMatchObject({ app: 'me-estoque', instanceId: expect.any(String), database: { schemaVersion: 4, status: 'ready' } });
+      expect(health.json()).toMatchObject({ app: 'me-estoque', instanceId: expect.any(String), database: { schemaVersion: 7, status: 'ready' } });
       const session = await app.inject({ url: '/api/v1/session', headers: host });
       expect(session.headers['set-cookie']).toContain('HttpOnly');
       const cookie = String(session.headers['set-cookie']).split(';')[0]!;

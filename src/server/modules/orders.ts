@@ -50,6 +50,7 @@ export function registerOrders(app:FastifyInstance,store:DatabaseStore):void {
   }));
   app.post<{Params:Params;Body:OrderCancelRequest}>('/api/v1/orders/:id/cancel',{schema:{params:IdParams,body:OrderCancelBody}},r=>command(store.db,'order.cancel:'+r.params.id,r.body,()=>{
     const db=store.db,b=r.body,o=order(db,r.params.id);assertEditable(o,b.version);date(b.effectiveDate);
+    if(o.unitId&&db.prepare('SELECT id FROM shipment WHERE unitId=?').get(o.unitId))fail('ALREADY_SHIPPED','Não é possível cancelar uma OP cuja moto já foi expedida.');
     if(!b.reason.trim()) fail('REASON_REQUIRED','Informe o motivo.',400);
     const now=new Date().toISOString();
     if(!o.unitId) {
@@ -69,7 +70,7 @@ export function registerOrders(app:FastifyInstance,store:DatabaseStore):void {
   }));
   app.get<{Querystring:OrderListRequest}>('/api/v1/units',{schema:{querystring:OrderListQuery}},r=>{
     const f=filters(r.query,['u.meCode','u.commercialName','u.chassis','o.code'],[{column:'u.originId',value:r.query.originId},{column:'o.status',value:r.query.status}]);
-    return sqlPage<UnitDto>(store.db,'SELECT u.*,COALESCE(p.productionStatus,u.productionStatus) productionStatus FROM unit u JOIN production_order o ON o.id=u.originOrderId LEFT JOIN production_record p ON p.unitId=u.id',f.where,f.parameters,'u.createdAt DESC,u.id',r.query);
+    return sqlPage<UnitDto>(store.db,`SELECT u.id,u.variantId,u.meCode,u.commercialName,u.color,u.chassis,u.chassisOriginal,u.originId,u.originOrderId,u.createdAt,COALESCE(p.productionStatus,u.productionStatus) productionStatus,CASE WHEN q.status='APPROVED' AND q.productionVersion=p.version AND p.productionStatus='ASSEMBLED' THEN 'APPROVED' WHEN q.status='REJECTED' AND q.productionVersion=p.version THEN 'REJECTED' ELSE 'PENDING' END qualityStatus,CASE WHEN sh.status='SHIPPED' THEN 'TRANSPORTE' WHEN sh.status IN('RECEIVED','RECEIVED_WITH_REMARKS') THEN 'LOJA' ELSE u.location END location FROM unit u JOIN production_order o ON o.id=u.originOrderId LEFT JOIN production_record p ON p.unitId=u.id LEFT JOIN quality_record q ON q.unitId=u.id LEFT JOIN shipment sh ON sh.unitId=u.id`,f.where,f.parameters,'u.createdAt DESC,u.id',r.query);
   });
   app.get<{Params:Params}>('/api/v1/units/:id',{schema:{params:IdParams}},r=>{
     const u=unit(store.db,r.params.id);return {...u,orders:store.db.prepare('SELECT * FROM production_order WHERE unitId=? ORDER BY createdAt,id').all(u.id),history:history(store.db,u.originOrderId)};

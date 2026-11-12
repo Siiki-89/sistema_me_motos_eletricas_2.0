@@ -1,7 +1,8 @@
 param(
     [ValidateRange(1,65535)][int]$Port = 4317,
     [string]$DataDirectory,
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$InitializeNewDatabase
 )
 $ErrorActionPreference = 'Stop'
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
@@ -18,6 +19,13 @@ if (-not [IO.Path]::IsPathFullyQualified($DataDirectory) -or $DataDirectory.Star
     throw 'Informe uma pasta absoluta neste computador, fora de pastas de rede.'
 }
 $dataPath = [IO.Path]::GetFullPath($DataDirectory)
+$dbPath = Join-Path $dataPath 'me-estoque.sqlite'
+if ($InitializeNewDatabase -and (Test-Path -LiteralPath $dbPath)) {
+    throw 'Já existe banco nesta pasta. Não é permitido reinicializar por engano.'
+}
+if (-not $InitializeNewDatabase -and -not (Test-Path -LiteralPath $dbPath)) {
+    throw 'Banco operacional não encontrado. Para um sistema totalmente novo, utilize -InitializeNewDatabase explicitamente. Não foi criado banco vazio.'
+}
 New-Item -ItemType Directory -Force -Path $dataPath | Out-Null
 $statePath = Join-Path $dataPath 'runtime-instance.json'
 $lock = [IO.File]::Open((Join-Path $dataPath 'launcher.lock'), [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
@@ -39,12 +47,13 @@ try {
     $logDir = Join-Path $dataPath 'logs'
     New-Item -ItemType Directory -Force -Path $logDir | Out-Null
     $saved = @{}
-    foreach ($name in @('ME_DATA_DIR','ME_PORT','ME_INSTANCE_ID','NODE_ENV')) { $saved[$name] = [Environment]::GetEnvironmentVariable($name,'Process') }
+    foreach ($name in @('ME_DATA_DIR','ME_PORT','ME_INSTANCE_ID','NODE_ENV','ME_INIT_NEW_DATABASE')) { $saved[$name] = [Environment]::GetEnvironmentVariable($name,'Process') }
     try {
         $env:ME_DATA_DIR = $dataPath
         $env:ME_PORT = [string]$Port
         $env:ME_INSTANCE_ID = $instance
         $env:NODE_ENV = 'production'
+        $env:ME_INIT_NEW_DATABASE = $(if ($InitializeNewDatabase) { '1' } else { '0' })
         $child = Start-Process -FilePath $node -ArgumentList ('"' + $entry + '"') -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $logDir "$instance.out.log") -RedirectStandardError (Join-Path $logDir "$instance.err.log")
     } finally { foreach ($name in $saved.Keys) { [Environment]::SetEnvironmentVariable($name,$saved[$name],'Process') } }
     $ready = $false

@@ -55,14 +55,14 @@ it('requires occurrence time and keeps pause identity scoped to its original OP'
  }finally{await f.close();}
 });
 it('restores production v4 atomically and upgrades populated v3 without changing OP unit or ledger',async()=>{
- const f=await fixture();try{const o=await f.create(),s=f.stage();const saved=(await f.put(o.url,{...f.cmd(),version:0,...f.body(),stages:[s]})).json();const backup=(await f.post('/api/v1/backups',{})).json();expect(backup.schemaVersion).toBe(4);
+ const f=await fixture();try{const o=await f.create(),s=f.stage();const saved=(await f.put(o.url,{...f.cmd(),version:0,...f.body(),stages:[s]})).json();const backup=(await f.post('/api/v1/backups',{})).json();expect(backup.schemaVersion).toBe(7);
  expect((await f.post(`${o.url}/stages/${s.id}/complete`,{...f.cmd(),version:1})).statusCode).toBe(200);
  expect((await f.post('/api/v1/restore',{backupId:backup.id,confirmation:'RESTAURAR'})).statusCode).toBe(200);expect((await f.get(o.url)).json()).toEqual(saved);
  const source=openDatabase(f.dir),v3dir=mkdtempSync(join(process.cwd(),'artifacts/test-tmp/production-v3-'));
  await source.backup(join(v3dir,'me-estoque.sqlite'));source.close();
  const db=(await import('better-sqlite3')).default;const v3=new db(join(v3dir,'me-estoque.sqlite'));
  // Only this isolated synthetic copy is converted into the pre-004 fixture.
- v3.exec('DROP TABLE production_history; DROP TABLE production_occurrence; DROP TABLE production_stage; DROP TABLE production_record; DELETE FROM schema_migration WHERE version=4');
+ v3.exec('DROP TABLE part_movement; DROP TABLE part_catalog; DROP TABLE shipment_event; DROP TABLE shipment; DROP TABLE quality_event; DROP TABLE quality_record; DROP TABLE production_history; DROP TABLE production_occurrence; DROP TABLE production_stage; DROP TABLE production_record; DELETE FROM schema_migration WHERE version>=4');
  const before={unit:v3.prepare('SELECT * FROM unit').all(),order:v3.prepare('SELECT * FROM production_order').all(),ledger:v3.prepare('SELECT * FROM box_ledger').all()};v3.close();
  const store=new DatabaseStore(v3dir);try{expect(store.list().some(b=>b.schemaVersion===3)).toBe(true);expect(store.db.prepare('SELECT * FROM unit').all()).toEqual(before.unit);expect(store.db.prepare('SELECT * FROM production_order').all()).toEqual(before.order);expect(store.db.prepare('SELECT * FROM box_ledger').all()).toEqual(before.ledger);expect(store.db.pragma('foreign_key_check')).toEqual([]);const old=store.list().find(b=>b.schemaVersion===3)!;expect(store.validate(old.id).schemaVersion).toBe(3);await store.restore(old.id);expect(store.db.prepare('SELECT * FROM unit').all()).toEqual(before.unit);}finally{store.close();}
  }finally{await f.close();}
