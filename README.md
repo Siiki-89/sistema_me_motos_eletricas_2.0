@@ -2,7 +2,7 @@
 
 Fundação local para gestão de estoque e produção da ME Motos Elétricas. Windows, React/TypeScript, Fastify e SQLite; operação essencial offline.
 
-**Entrega atual (etapa6):** modelos/cores, caixas, OP com reserva e individualização, produção/montagem, pausas, tempos, ocorrências, autoconferência, backup e restauração. Qualidade final, peças e expedição permanecem pendentes.
+**Entrega atual (etapa6):** modelos/cores, caixas, OP com reserva e individualização, produção/montagem, pausas, tempos, ocorrências, autoconferência, backup e restauração. Inspeção de qualidade e expedição/recebimento incorporados na branch de finalização. Peças e melhorias de produção permanecem pendentes.
 
 **Ativação operacional pendente:** o banco anterior de224 caixas não foi localizado. Há somente registros dos lançamentos preservados; não houve reconstrução. Leia o [diagnóstico](docs/diagnostico-banco-operacional.md). Testes e demonstrações utilizam bases sintéticas.
 

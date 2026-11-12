@@ -1,4 +1,5 @@
 import { registerOrders } from './orders.js';
+import { registerShipping } from './shipping.js';
 import { registerQuality } from './quality.js';
 import { registerProduction } from './production/index.js';
 import type { FastifyInstance } from "fastify";
@@ -14,4 +15,5 @@ export function registerOperations(app: FastifyInstance, store: DatabaseStore): 
     registerOrders(app, store);
     registerProduction(app, store);
     registerQuality(app, store);
+    registerShipping(app, store);
 }
