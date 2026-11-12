@@ -16,7 +16,13 @@ No PowerShell7, na raiz do projeto:
 .\scripts\stop.ps1 -DataDirectory 'C:\caminho\da\pasta-verificada'
 ```
 
-Substitua o caminho de exemplo pela pasta absoluta previamente verificada; não existe fallback para uma base padrão. Abre `http://127.0.0.1:4317`. Runtime Node local já preparado, sem dependência do Codex ou mudança no Node global. Consulte [operação e recuperação](docs/operacao-local.md).
+Substitua o caminho de exemplo pela pasta absoluta previamente verificada; não existe fallback para uma base padrão.
+
+**Primeira utilização em uma pasta realmente nova:** crie explicitamente o banco inicial com:
+```powershell
+.\\scripts\\start.ps1 -DataDirectory 'C:\\ME-Estoque-Dados' -InitializeNewDatabase
+```
+Não use este parâmetro para recuperar caixas antigas ou operar em um banco já existente. Inicializações seguintes usam o comando normal, sem o parâmetro. O sistema recusa bancos ausentes na inicialização normal. Abre `http://127.0.0.1:4317`. Runtime Node local já preparado, sem dependência do Codex ou mudança no Node global. Consulte [operação e recuperação](docs/operacao-local.md).
 
 ## Desenvolvimento e verificação
 

@@ -17,6 +17,19 @@ export function buildApp(options: AppOptions): FastifyInstance {
   const expectedHost = `127.0.0.1:${options.port}`; const expectedOrigin = `http://${expectedHost}`;
   const startedAt = new Date().toISOString(); const instanceId = options.instanceId ?? randomUUID();
   const sessions = new Map<string, { token: string; expires: number }>();
+  if (options.mode === 'production') {
+    let backupTimer: ReturnType<typeof setInterval> | undefined;
+    app.addHook('onReady', async () => {
+      // The first automatic snapshot runs before serving any operational request.
+      await store.createAutomaticIfDue();
+      backupTimer = setInterval(() => { void store.createAutomaticIfDue().catch(() => {
+        // Backup errors remain observable through the backup screen / filesystem.
+        // Do not interrupt ongoing user operations when a scheduled copy fails.
+      }); }, 6 * 60 * 60 * 1000);
+      backupTimer.unref();
+    });
+    app.addHook('onClose', async () => { if (backupTimer) clearInterval(backupTimer); });
+  }
   app.register(cookie);
   app.addHook('onClose', async () => { sessions.clear(); store.close(); });
   const errorPayload = (code: string, message: string, requestId: string) => ({ error: { code, message }, requestId });

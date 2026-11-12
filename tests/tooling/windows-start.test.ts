@@ -24,7 +24,7 @@ it('starts the built app, reuses only its own instance and stops it safely', asy
   const data = await testDirectory('me-fundacao-á ');
   const port = await freePort();
   try {
-    const first = await run('start.ps1', ['-DataDirectory',data,'-Port',String(port),'-NoBrowser']);
+    const first = await run('start.ps1', ['-DataDirectory',data,'-Port',String(port),'-NoBrowser','-InitializeNewDatabase']);
     expect(first.stdout).toContain('http://127.0.0.1:');
     const health = await (await fetch(`http://127.0.0.1:${port}/api/v1/health`)).json();
     expect(health.app).toBe('me-estoque');

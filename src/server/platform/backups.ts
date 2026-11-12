@@ -4,7 +4,7 @@ import { constants, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync
 import { join } from 'node:path';
 import { DATABASE_NAME, openDatabase, SCHEMA_VERSION, validateSchema, type SqliteDatabase } from './database.js';
 
-export interface BackupItem { id: string; createdAt: string; schemaVersion: number; sizeBytes: number }
+export interface BackupItem { id: string; createdAt: string; schemaVersion: number; sizeBytes: number; mode?: "MANUAL" | "AUTO" }
 interface Manifest extends BackupItem { sha256: string }
 export class BackupError extends Error {}
 export class MaintenanceError extends Error {}
@@ -59,12 +59,17 @@ export class DatabaseStore {
     const { sha256: _hash, ...publicItem } = item; return publicItem;
   }
   async create(): Promise<BackupItem> { return this.exclusive(() => this.createSnapshot()); }
-  private async createSnapshot(): Promise<BackupItem> {
+  async createAutomaticIfDue(): Promise<BackupItem | null> {
+    const recent = this.list().find(item => item.mode === "AUTO");
+    if (recent && Date.now() - Date.parse(recent.createdAt) < 24 * 60 * 60 * 1000) return null;
+    return this.exclusive(() => this.createSnapshot("AUTO"));
+  }
+  private async createSnapshot(mode: "MANUAL" | "AUTO" = "MANUAL"): Promise<BackupItem> {
     const id = randomUUID(); const paths = this.paths(id);
     // Driver backup makes a consistent snapshot including committed WAL contents.
     try {
       await this.db.backup(paths.database);
-      const item: Manifest = { id, createdAt: new Date().toISOString(), schemaVersion: SCHEMA_VERSION, sizeBytes: statSync(paths.database).size, sha256: hash(paths.database) };
+      const item: Manifest = { id, mode, createdAt: new Date().toISOString(), schemaVersion: SCHEMA_VERSION, sizeBytes: statSync(paths.database).size, sha256: hash(paths.database) };
       writeFileSync(paths.manifest, JSON.stringify(item), { flag: 'wx' });
       return this.validate(id);
     } catch (error) {

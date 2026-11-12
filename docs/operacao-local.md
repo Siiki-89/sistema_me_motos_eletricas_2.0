@@ -102,3 +102,8 @@ O editor de produção preserva rascunho e tentativa exata no armazenamento da p
 Linhas novas podem ser removidas antes de salvar. Registros já persistidos não são apagados nesta entrega; correções de horários/observações geram histórico. Anulação auditada será uma evolução própria. Histórico mostra alterações antes/depois.
 
 Teste isolado adicional: `scripts/npm.ps1 run test:browser production`. Consulte a verificação para cálculos, evidências e limites.
+
+
+## Backup automático (versão de finalização)
+
+Quando a aplicação é iniciada em modo normal, cria uma cópia automática consistente, identificada como AUTO, se não houver cópia automática com menos de 24 horas. Enquanto o aplicativo permanece aberto, verifica a necessidade a cada seis horas. A cópia fica em `<pasta de dados>/backups` e pode ser validada/restaurada pela tela de proteção. Backups manuais continuam independentes. As cópias não são apagadas automaticamente nesta versão: monitore o espaço de disco e copie periodicamente os backups para um dispositivo físico separado. O sistema não configura armazenamento em nuvem.

@@ -1,4 +1,5 @@
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { buildApp } from './app.js';
 
@@ -12,6 +13,9 @@ try {
     process.exitCode = 1;
   } else {
   const dataDir = configured;
+  if (mode === 'production' && !existsSync(join(dataDir, 'me-estoque.sqlite')) && process.env['ME_INIT_NEW_DATABASE'] !== '1') {
+    throw new Error('Banco operacional não encontrado. Crie um novo banco somente com a inicialização explícita.');
+  }
   const webDir = mode === 'development' ? undefined : process.env['ME_WEB_DIR'] ?? resolve(dirname(fileURLToPath(import.meta.url)), '../web');
   app = buildApp({ dataDir, port, mode, ...(webDir ? { webDir } : {}), ...(process.env['ME_INSTANCE_ID'] ? { instanceId: process.env['ME_INSTANCE_ID'] } : {}) });
   await app.listen({ host: '127.0.0.1', port });
