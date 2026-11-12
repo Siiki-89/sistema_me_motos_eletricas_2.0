@@ -16,4 +16,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - run: npx vitest run --project server --project web
+      # Tooling test suite is Windows-specific and requires an installed local runtime.
+      # It remains part of the Windows workstation verification process.

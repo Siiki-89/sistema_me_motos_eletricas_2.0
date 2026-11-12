@@ -99,7 +99,7 @@ it('salva unidade existente por PUT sem novo comando de conversão', async () =>
         return Response.json(order);
     }
     return Response.json({ ...order, status: 'TRANSCRIBING', unitId: 'u1', unit: { id: 'u1', chassis: null, createdAt: '2026-11-10T12:00:00Z' } });
-} return original(input, init); })); mount('/ordens/o1'); const user = userEvent.setup(); await user.type(await screen.findByLabelText('Chassi (opcional)'), 'syn-1'); await user.click(screen.getByRole('button', { name: 'Salvar alterações' })); expect(writes[0]).toMatchObject({ version: 1, chassis: 'syn-1' }); expect(screen.queryByRole('button', { name: 'Iniciar transcrição e baixar 1 caixa' })).not.toBeInTheDocument(); expect(screen.getByText('Qualidade')).toBeVisible(); });
+} return original(input, init); })); mount('/ordens/o1'); const user = userEvent.setup(); await user.type(await screen.findByLabelText('Chassi (opcional)'), 'syn-1'); await user.click(screen.getByRole('button', { name: 'Salvar alterações' })); expect(writes[0]).toMatchObject({ version: 1, chassis: 'syn-1' }); expect(screen.queryByRole('button', { name: 'Iniciar transcrição e baixar 1 caixa' })).not.toBeInTheDocument(); expect(screen.getByRole('link',{name:'Qualidade'})).toBeVisible(); });
 it('nova OP mostra saldo e confirma uma reserva com responsáveis opcionais', async () => { const original = fetch; vi.stubGlobal('fetch', vi.fn(async (input: string, init?: RequestInit) => { if (String(input).includes('/boxes/stock?'))
     return Response.json({ items: [{ variantId: 'v1', meCode: 'ME-TESTE', color: 'Azul', available: 2, physical: 3, reserved: 1, blocked: 0 }], total: 1, limit: 50 }); if (String(input).endsWith('/orders') && init?.method === 'POST') {
     writes.push(JSON.parse(String(init.body)));

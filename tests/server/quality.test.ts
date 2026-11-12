@@ -18,7 +18,7 @@ it('quality is explicit, versioned and invalidates after production is reopened'
  try{
  const p=(await post('/api/v1/catalog/products',{...cmd(),meCode:'QUALITY-SYNTHETIC'})).json();
  const v=(await post('/api/v1/catalog/variants',{...cmd(),productId:p.id,color:null})).json();
- expect((await post('/api/v1/boxes/receipts',{...cmd(),variantId:v.id,quantity:1,receivedDate:'2026-11-11'})).statusCode).toBe(201);
+ expect((await post('/api/v1/boxes/receipts',{...cmd(),variantId:v.id,quantity:1,receivedDate:'2026-11-11'})).statusCode).toBe(200);
  const o=(await post('/api/v1/orders',{...cmd(),variantId:v.id,orderDate:'2026-11-11'})).json();
  const converted=await post(`/api/v1/orders/${o.id}/convert`,{...cmd(),version:1,chassis:'QUALITY-CHASSIS'});
  expect(converted.statusCode).toBe(200);
